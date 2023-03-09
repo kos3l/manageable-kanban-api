@@ -14,17 +14,21 @@ const register = async (
   userBody: ICreateUserDTO
 ): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
   const { error } = registerValidation(userBody);
+
   if (error) {
     throw new ApiError(httpStatus[400], error.details[0].message);
   }
 
   const emailExist: HydratedDocument<UserDocument, UserMethods> =
     await userService.getUserByEmail(userBody.email);
+
   if (emailExist) {
     throw new ApiError(httpStatus[400], "Email already exists");
   }
+
   const newUser: HydratedDocument<UserDocument, UserMethods> =
     await userService.createNewUser(userBody);
+
   return newUser;
 };
 
@@ -32,6 +36,7 @@ const login = async (
   userBody: ICreateLoginDTO
 ): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
   const { error } = loginValidation(userBody);
+
   if (error) {
     throw new ApiError(httpStatus[400], error.details[0].message);
   }

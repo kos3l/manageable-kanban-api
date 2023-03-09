@@ -13,6 +13,7 @@ const register = async (
   try {
     const savedUser: HydratedDocument<UserDocument, UserModel> =
       await authService.register(req.body);
+
     return res.json({ error: null, data: savedUser._id });
   } catch (error) {
     return res.status(400).json(error);
@@ -26,6 +27,7 @@ const login = async (
   try {
     const loggedInUser: HydratedDocument<UserDocument, UserModel> =
       await authService.login(req.body);
+
     const username: string =
       loggedInUser.firstName + " " + loggedInUser.lastName;
 

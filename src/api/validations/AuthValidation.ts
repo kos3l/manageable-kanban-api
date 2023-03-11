@@ -22,4 +22,8 @@ const loginValidation = (data: ICreateLoginDTO) => {
   return schema.validate(data);
 };
 
-module.exports = { registerValidation, loginValidation };
+const authValidation = {
+  registerValidation,
+  loginValidation,
+};
+export default authValidation;

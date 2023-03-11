@@ -1,18 +1,11 @@
-const authService = require("../services/AuthService");
-const tokenService = require("../services/TokenService");
+import authService from "../services/AuthService";
+import tokenService from "../services/TokenService";
 import { Response } from "express";
-import { HydratedDocument } from "mongoose";
-import { UserDocument } from "../models/documents/UserDocument";
-import { UserModel } from "../models/types/UserModel";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 
-const register = async (
-  req: ExtendedRequest,
-  res: Response
-): Promise<Response> => {
+const register = async (req: ExtendedRequest, res: Response) => {
   try {
-    const savedUser: HydratedDocument<UserDocument, UserModel> =
-      await authService.register(req.body);
+    const savedUser = await authService.register(req.body);
 
     return res.json({ error: null, data: savedUser._id });
   } catch (error) {
@@ -20,20 +13,16 @@ const register = async (
   }
 };
 
-const login = async (
-  req: ExtendedRequest,
-  res: Response
-): Promise<Response> => {
+const login = async (req: ExtendedRequest, res: Response) => {
   try {
-    const loggedInUser: HydratedDocument<UserDocument, UserModel> =
-      await authService.login(req.body);
+    const loggedInUser = await authService.login(req.body);
 
     const username: string =
       loggedInUser.firstName + " " + loggedInUser.lastName;
 
     const token: string = await tokenService.generateToken(
       username,
-      loggedInUser._id
+      loggedInUser.id
     );
 
     return res.header("auth-token", token).json({
@@ -45,7 +34,9 @@ const login = async (
   }
 };
 
-module.exports = {
+const authController = {
   register,
   login,
 };
+
+export default authController;

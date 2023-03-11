@@ -13,6 +13,8 @@ const generateToken = async (username: string, id: string): Promise<string> => {
   );
 };
 
-module.exports = {
+const tokenService = {
   generateToken,
 };
+
+export default tokenService;

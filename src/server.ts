@@ -5,7 +5,7 @@ import yaml from "yamljs";
 import bodyParser from "body-parser";
 import authRoutes from "./api/routes/AuthRoutes";
 const swaggerDefinition = yaml.load("./src/config/swagger.yaml");
-import swaggerUi = require("swagger-ui-express");
+import swaggerUi from "swagger-ui-express";
 
 // Import auth middleware - uncomment when needed
 // import { verifyToken } from "./api/middleware/TokenMiddleware";

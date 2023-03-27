@@ -4,7 +4,7 @@
   "description": "Boilerplate for my project REST Apis on the Web Development Top up. Uses: Express, Node, Mongodb, Mongoose, Typescript",
   "main": "server.ts",
   "scripts": {
-    "start-dev": "nodemon ./src/server.ts",
+    "start-dev": "cross-env NODE_ENV=development nodemon ./src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Kos3l",

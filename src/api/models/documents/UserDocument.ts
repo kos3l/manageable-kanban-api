@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export interface UserDocument {
   id: string;
   firstName: string;
@@ -5,6 +7,9 @@ export interface UserDocument {
   email: string;
   password: string;
   birthdate: Date;
+  profilePicture?: string;
+  bio: string;
+  teams: mongoose.Types.ObjectId[];
 }
 
 export interface UserMethods {

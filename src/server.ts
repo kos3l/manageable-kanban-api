@@ -6,7 +6,6 @@ import bodyParser from "body-parser";
 import authRoutes from "./api/routes/AuthRoutes";
 const swaggerDefinition = yaml.load("./src/config/swagger.yaml");
 import swaggerUi from "swagger-ui-express";
-
 // Import auth middleware - uncomment when needed
 // import { verifyToken } from "./api/middleware/TokenMiddleware";
 

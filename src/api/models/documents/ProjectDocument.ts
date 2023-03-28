@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { IColumn } from "../interfaces/IColumn";
 
 export interface ProjectDocument {
   id: string;
@@ -10,5 +11,5 @@ export interface ProjectDocument {
   startDate: Date;
   endDate: Date;
   teamId: mongoose.Types.ObjectId;
-  //   columns: ColumnDocument
+  columns: IColumn[];
 }

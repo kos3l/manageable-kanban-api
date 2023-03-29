@@ -1,14 +1,14 @@
 import { Schema } from "mongoose";
-import { IColumn } from "../interfaces/IColumn";
+import { ColumnDocument } from "../documents/ColumnDocument";
 import { taskSchema } from "./TaskSchema";
 
-export let columnSchema = new Schema<IColumn>(
+export let columnSchema = new Schema<ColumnDocument>(
   {
     name: {
       type: String,
       required: true,
-      min: 2,
-      max: 255,
+      minlength: 2,
+      maxlength: 255,
     },
     tasks: [
       {

@@ -7,14 +7,14 @@ let taskSchema = new Schema<TaskDocument>(
     title: {
       type: String,
       required: true,
-      min: 2,
-      max: 255,
+      minlength: 2,
+      maxlength: 255,
     },
     description: {
       type: String,
       required: false,
-      min: 3,
-      max: 1056,
+      minlength: 3,
+      maxlength: 1056,
     },
     // will be updated
     picture: {

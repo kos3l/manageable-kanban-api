@@ -1,20 +1,19 @@
-import { Schema, model } from "mongoose";
-import { IColumn } from "../interfaces/IColumn";
-import { ILabel } from "../interfaces/ILabel";
+import { Schema } from "mongoose";
+import { LabelDocument } from "../documents/LabelDocument";
 
-export let labelSchema = new Schema<ILabel>(
+export let labelSchema = new Schema<LabelDocument>(
   {
     name: {
       type: String,
       required: true,
-      min: 2,
-      max: 255,
+      minlength: 2,
+      maxlength: 255,
     },
     color: {
       type: String,
       required: true,
-      min: 1,
-      max: 24,
+      minlength: 1,
+      maxlength: 24,
     },
   },
   { timestamps: true }

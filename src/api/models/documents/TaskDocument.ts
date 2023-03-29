@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { ILabel } from "../interfaces/ILabel";
+import { LabelDocument } from "./LabelDocument";
 
 export interface TaskDocument {
   id: string;
@@ -9,5 +9,5 @@ export interface TaskDocument {
   endDate: Date;
   picture?: string;
   columnId: mongoose.Types.ObjectId;
-  labels?: ILabel[];
+  labels?: LabelDocument[];
 }

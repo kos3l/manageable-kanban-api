@@ -8,26 +8,28 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
     firstName: {
       type: String,
       required: true,
-      min: 3,
-      max: 255,
+      minlength: 3,
+      maxlength: 255,
     },
     lastName: {
       type: String,
       required: true,
-      min: 3,
-      max: 255,
+      minlength: 3,
+      maxlength: 255,
     },
     email: {
       type: String,
       required: true,
-      min: 6,
-      max: 255,
+      minlength: 6,
+      maxlength: 255,
+      trim: true,
     },
     password: {
       type: String,
       required: true,
-      min: 6,
-      max: 255,
+      minlength: 6,
+      maxlength: 255,
+      trim: true,
     },
     birthdate: {
       type: Date,
@@ -36,8 +38,8 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
     bio: {
       type: String,
       required: true,
-      min: 6,
-      max: 1024,
+      minlength: 6,
+      maxlength: 1024,
     },
     profilePicture: {
       type: String,

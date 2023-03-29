@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-export interface IColumn {
+export interface ColumnDocument {
   id: string;
   name: string;
   tasks: mongoose.Types.ObjectId[];

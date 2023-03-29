@@ -5,9 +5,8 @@ import { IColumn } from "../interfaces/IColumn";
 export interface ProjectDocument {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   techStack: string[];
-  // maybe enum idk
   status: ProjectStatus;
   startDate: Date;
   endDate: Date;

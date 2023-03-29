@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { ProjectDocument } from "../documents/ProjectDocument";
 import { TeamDocument } from "../documents/TeamDocument";
 import { ProjectStatus } from "../enum/ProjectStatus";
+import { columnSchema } from "./ColumnSchema";
 
 let projectSchema = new Schema<ProjectDocument>(
   {
@@ -17,7 +18,6 @@ let projectSchema = new Schema<ProjectDocument>(
       min: 3,
       max: 1056,
     },
-    // will be updated
     techStack: {
       type: [String],
       required: true,
@@ -36,6 +36,16 @@ let projectSchema = new Schema<ProjectDocument>(
       type: Date,
       required: true,
     },
+    teamId: {
+      type: Schema.Types.ObjectId,
+      required: true,
+    },
+    columns: [
+      {
+        type: columnSchema,
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );

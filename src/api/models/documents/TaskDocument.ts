@@ -4,7 +4,7 @@ import { ILabel } from "../interfaces/ILabel";
 export interface TaskDocument {
   id: string;
   title: string;
-  description: string;
+  description?: string;
   startDate: Date;
   endDate: Date;
   picture?: string;

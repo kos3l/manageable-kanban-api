@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { Team } from "../models/schemas/TeamSchema";
 import teamValidation from "../validations/TeamValidation";
@@ -6,7 +7,10 @@ import userService from "./UserService";
 const ApiError = require("../utils/ApiError");
 const httpStatus = require("http-status");
 
-const getAllTeams = async () => {};
+const getAllTeams = async (userId: mongoose.Types.ObjectId) => {
+  const allTeams = await Team.find({ createdBy: userId });
+  return allTeams;
+};
 
 const getAllTeamsById = async () => {};
 

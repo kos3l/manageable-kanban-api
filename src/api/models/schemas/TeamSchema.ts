@@ -9,11 +9,9 @@ let teamSchema = new Schema<TeamDocument>(
       minlength: 2,
       maxlength: 255,
     },
-    description: {
-      type: String,
-      required: false,
-      minlength: 3,
-      maxlength: 1056,
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      required: true,
     },
     // will be updated
     picture: {

@@ -1,10 +1,7 @@
 import mongoose from "mongoose";
 
-export interface TeamDocument {
-  id: string;
+export interface ICreateTeamDTO {
   name: string;
   createdBy: mongoose.Types.ObjectId;
-  picture?: string;
   users: [mongoose.Types.ObjectId];
-  projects?: [mongoose.Types.ObjectId];
 }

@@ -1,7 +1,7 @@
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import { ICreateLoginDTO } from "../models/dtos/user/ICreateLoginDTO";
 
-const Joi = require("joi");
+import Joi from "joi";
 
 const registerValidation = (data: ICreateUserDTO) => {
   const schema = Joi.object({

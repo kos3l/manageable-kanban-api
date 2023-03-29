@@ -1,8 +1,5 @@
-import { Schema, model, Model } from "mongoose";
+import { Schema, model } from "mongoose";
 import { TeamDocument } from "../documents/TeamDocument";
-import { UserDocument, UserMethods } from "../documents/UserDocument";
-import { UserModel } from "../types/UserModel";
-const bcrypt = require("bcrypt");
 
 let teamSchema = new Schema<TeamDocument>(
   {
@@ -22,15 +19,16 @@ let teamSchema = new Schema<TeamDocument>(
     picture: {
       type: String,
       required: false,
-      min: 6,
-      max: 255,
     },
     users: {
       type: [Schema.Types.ObjectId],
       ref: "User",
       required: true,
-      min: 6,
-      max: 255,
+    },
+    projects: {
+      type: [Schema.Types.ObjectId],
+      ref: "Project",
+      required: false,
     },
   },
   { timestamps: true }

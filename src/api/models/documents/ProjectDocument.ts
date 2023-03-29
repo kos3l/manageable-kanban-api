@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ProjectStatus } from "../enum/ProjectStatus";
 import { IColumn } from "../interfaces/IColumn";
 
 export interface ProjectDocument {
@@ -7,7 +8,7 @@ export interface ProjectDocument {
   description: string;
   techStack: string[];
   // maybe enum idk
-  status: string;
+  status: ProjectStatus;
   startDate: Date;
   endDate: Date;
   teamId: mongoose.Types.ObjectId;

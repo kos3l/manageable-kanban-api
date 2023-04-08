@@ -57,11 +57,10 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
 
     if (!userToBeUpdated) {
       await session.abortTransaction();
-      session.endSession();
       return;
     }
 
-    await userService.updateUser(userId, {
+    const updatedUser = {
       firstName: userToBeUpdated.firstName,
       lastName: userToBeUpdated.lastName,
       birthdate: userToBeUpdated.birthdate,
@@ -69,15 +68,18 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
         userToBeUpdated.teams.length > 0
           ? [...userToBeUpdated.teams, newTeam._id]
           : [newTeam._id],
-    });
+    };
+
+    await userService.updateUser(userId, updatedUser);
 
     await session.commitTransaction();
-    session.endSession();
     return res.send(newTeam);
   } catch (error: any) {
     await session.abortTransaction();
-    session.endSession();
+
     return res.status(500).send({ message: error.message });
+  } finally {
+    session.endSession();
   }
 };
 

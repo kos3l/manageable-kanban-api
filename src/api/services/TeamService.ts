@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
+import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
 import { Team } from "../models/schemas/TeamSchema";
 import teamValidation from "../validations/TeamValidation";
 import userService from "./UserService";
@@ -35,7 +36,10 @@ const createNewTeam = async (newTeam: ICreateTeamDTO) => {
   return createdTeam;
 };
 
-const updateOneTeam = async () => {};
+const updateOneTeam = async (id: string, updatedTeam: IUpdateTeamDTO) => {
+  const team = await Team.findByIdAndUpdate(id, updatedTeam);
+  return team;
+};
 
 const deleteOneTeam = async () => {};
 

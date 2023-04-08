@@ -1,6 +1,7 @@
 import { Response } from "express";
 import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
+import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import teamService from "../services/TeamService";
 
@@ -54,7 +55,24 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
-const updateOneTeam = async (req: ExtendedRequest, res: Response) => {};
+const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
+  const id: string = req.params.id;
+  const data: IUpdateTeamDTO = req.body;
+
+  try {
+    const updatedTeam = await teamService.updateOneTeam(id, data);
+
+    if (!updatedTeam) {
+      return res.status(404).send({
+        message: "Cannot update team with id=" + id + ". Team was not found",
+      });
+    } else {
+      return res.send({ message: "Team was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
 
 const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {};
 

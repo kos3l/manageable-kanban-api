@@ -1,3 +1,5 @@
+import { timeStamp } from "console";
+import { Timestamp } from "mongodb";
 import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
@@ -52,7 +54,10 @@ const updateOneTeam = async (id: string, updatedTeam: IUpdateTeamDTO) => {
 };
 
 const softDeleteOneTeam = async (id: string) => {
-  const deletedTeam = await Team.findByIdAndUpdate(id, { isDeleted: true });
+  const deletedTeam = await Team.findByIdAndUpdate(id, {
+    isDeleted: true,
+    deletedAt: Date.now(),
+  });
   return deletedTeam;
 };
 

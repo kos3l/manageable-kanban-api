@@ -37,18 +37,18 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
     },
     bio: {
       type: String,
-      required: true,
+      required: false,
       minlength: 6,
       maxlength: 1024,
     },
     profilePicture: {
       type: String,
-      required: true,
+      required: false,
     },
     teams: {
       type: [Schema.Types.ObjectId],
       ref: "Team",
-      required: true,
+      required: false,
     },
   },
   { timestamps: true }

@@ -2,12 +2,23 @@ import authService from "../services/AuthService";
 import tokenService from "../services/TokenService";
 import { Response } from "express";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
+import teamService from "../services/TeamService";
+import mongoose from "mongoose";
+import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 
 const register = async (req: ExtendedRequest, res: Response) => {
   try {
     const savedUser = await authService.register(req.body);
 
-    return res.json({ error: null, data: savedUser._id });
+    const teamData: ICreateTeamDTO = {
+      name: "My first team",
+      createdBy: new mongoose.Types.ObjectId(savedUser.id),
+      users: [new mongoose.Types.ObjectId(savedUser.id)],
+    };
+
+    const firstTeam = await teamService.createNewTeam(teamData);
+
+    return res.json({ error: null, data: [savedUser._id, firstTeam._id] });
   } catch (error) {
     return res.status(400).json(error);
   }

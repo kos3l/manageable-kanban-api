@@ -1,15 +1,24 @@
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import mongoose from "mongoose";
 import { User } from "../models/schemas/UserSchema";
+import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 
 const createNewUser = async (user: ICreateUserDTO) => {
   const newUser = await User.create(user);
   return newUser;
 };
 
-const getUserById = async (id: mongoose.Types.ObjectId) => {
-  const user = await User.findById(id);
-  return user;
+const getUserById = async (
+  id: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  if (session) {
+    const user = await User.findById(id, {}, { session });
+    return user;
+  } else {
+    const user = await User.findById(id);
+    return user;
+  }
 };
 
 const getUserByEmail = async (email: string) => {
@@ -19,10 +28,16 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
+const updateUser = async (id: string, userDto: IUpdateUserDTO) => {
+  const user = await User.findByIdAndUpdate(id, userDto);
+  return user;
+};
+
 const userService = {
   createNewUser,
   getUserById,
   getUserByEmail,
+  updateUser,
 };
 
 export default userService;

@@ -28,6 +28,15 @@ let teamSchema = new Schema<TeamDocument>(
       ref: "Project",
       required: false,
     },
+    isDeleted: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -55,5 +64,13 @@ teamSchema.pre(
     update.$inc.__v = 1;
   }
 );
+
+teamSchema.pre("find", function () {
+  this.where({ isDeleted: false });
+});
+
+teamSchema.pre("findOne", function () {
+  this.where({ isDeleted: false });
+});
 
 export const Team = model<TeamDocument>("team", teamSchema);

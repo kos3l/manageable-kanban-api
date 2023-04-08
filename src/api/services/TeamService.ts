@@ -21,19 +21,29 @@ const getTeamById = async (userId: string, teamId: string) => {
   return team;
 };
 
-const createNewTeam = async (newTeam: ICreateTeamDTO) => {
+const createNewTeam = async (
+  newTeam: ICreateTeamDTO,
+  session?: mongoose.mongo.ClientSession
+) => {
   const { error } = teamValidation.createTeamValidation(newTeam);
   if (error) {
     throw new ApiError(httpStatus[400], error.details[0].message);
   }
 
-  const userExists = await userService.getUserById(newTeam.createdBy);
+  const userExists = await userService.getUserById(
+    newTeam.createdBy.toString()
+  );
   if (!userExists) {
     throw new ApiError(httpStatus[400], "User does not exist!");
   }
 
-  const createdTeam = await Team.create(newTeam);
-  return createdTeam;
+  if (session) {
+    const createdTeam = await Team.create([newTeam], { session });
+    return createdTeam[0];
+  } else {
+    const createdTeam = await Team.create(newTeam);
+    return createdTeam;
+  }
 };
 
 const updateOneTeam = async (id: string, updatedTeam: IUpdateTeamDTO) => {
@@ -41,14 +51,17 @@ const updateOneTeam = async (id: string, updatedTeam: IUpdateTeamDTO) => {
   return team;
 };
 
-const deleteOneTeam = async () => {};
+const softDeleteOneTeam = async (id: string) => {
+  const deletedTeam = await Team.findByIdAndUpdate(id, { isDeleted: true });
+  return deletedTeam;
+};
 
 const teamService = {
   getAllTeams,
   getTeamById,
   createNewTeam,
   updateOneTeam,
-  deleteOneTeam,
+  softDeleteOneTeam,
 };
 
 export default teamService;

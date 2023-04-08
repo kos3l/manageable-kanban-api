@@ -9,7 +9,7 @@ export interface UserDocument {
   birthdate: Date;
   profilePicture?: string;
   bio?: string;
-  teams?: [mongoose.Types.ObjectId];
+  teams: mongoose.Types.ObjectId[];
 }
 
 export interface UserMethods {

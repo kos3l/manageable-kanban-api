@@ -5,6 +5,8 @@ export interface TeamDocument {
   name: string;
   createdBy: mongoose.Types.ObjectId;
   picture?: string;
-  users: [mongoose.Types.ObjectId];
-  projects?: [mongoose.Types.ObjectId];
+  users: mongoose.Types.ObjectId[];
+  projects?: mongoose.Types.ObjectId[];
+  isDeleted: boolean;
+  deletedAt?: Date;
 }

@@ -1,5 +1,4 @@
 import { Response } from "express";
-import { ObjectId } from "mongodb";
 import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
@@ -9,18 +8,29 @@ const getAllTeams = async (req: ExtendedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).send({ message: "Unauthorised" });
   }
-  const id: mongoose.Types.ObjectId = new mongoose.Types.ObjectId(req.user);
-
+  const id = req.user;
   try {
     const allTeams = await teamService.getAllTeams(id);
-
     return res.send(allTeams);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
   }
 };
 
-const getAllTeamsById = async (req: ExtendedRequest, res: Response) => {};
+const getTeamById = async (req: ExtendedRequest, res: Response) => {
+  if (!req.user) {
+    return res.status(401).send({ message: "Unauthorised" });
+  }
+  const userId = req.user;
+  const teamId = req.params.id;
+
+  try {
+    const team = await teamService.getTeamById(userId, teamId);
+    return res.send(team);
+  } catch (error: any) {
+    return res.status(500).send({ message: error.message });
+  }
+};
 
 const createNewTeam = async (req: ExtendedRequest, res: Response) => {
   const data = req.body;
@@ -50,7 +60,7 @@ const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {};
 
 const teamController = {
   getAllTeams,
-  getAllTeamsById,
+  getTeamById,
   createNewTeam,
   updateOneTeam,
   deleteOneTeam,

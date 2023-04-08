@@ -7,12 +7,18 @@ import userService from "./UserService";
 const ApiError = require("../utils/ApiError");
 const httpStatus = require("http-status");
 
-const getAllTeams = async (userId: mongoose.Types.ObjectId) => {
+const getAllTeams = async (userId: string) => {
   const allTeams = await Team.find({ createdBy: userId });
   return allTeams;
 };
 
-const getAllTeamsById = async () => {};
+const getTeamById = async (userId: string, teamId: string) => {
+  const team = await Team.findById(teamId);
+  if (team && !team.createdBy.equals(userId)) {
+    return null;
+  }
+  return team;
+};
 
 const createNewTeam = async (newTeam: ICreateTeamDTO) => {
   const { error } = teamValidation.createTeamValidation(newTeam);
@@ -35,7 +41,7 @@ const deleteOneTeam = async () => {};
 
 const teamService = {
   getAllTeams,
-  getAllTeamsById,
+  getTeamById,
   createNewTeam,
   updateOneTeam,
   deleteOneTeam,

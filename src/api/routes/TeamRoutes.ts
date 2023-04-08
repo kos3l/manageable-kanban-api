@@ -6,7 +6,7 @@ const router = express.Router();
 router.get("/", teamController.getAllTeams);
 
 // route: /api/team/:id
-router.get("/:id", teamController.getAllTeamsById);
+router.get("/:id", teamController.getTeamById);
 
 // route: /api/team/
 router.post("/", teamController.createNewTeam);

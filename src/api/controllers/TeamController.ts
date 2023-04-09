@@ -129,6 +129,9 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
 
     // compare with the new ids arrray
     // depending on who is there update the users team reference
+    // put it all into a transaction
+    // forbid from removing the creator of the team
+    // forbid from removing team members if it makes the array empty
 
     // const updateUsers = await data.userIds.forEach(async (id) => {
     //   const user = await userService.getUserById(id);

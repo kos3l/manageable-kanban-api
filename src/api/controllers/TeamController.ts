@@ -102,6 +102,62 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
+  const teamId: string = req.params.id;
+  const data: IUpdateTeamDTO = req.body;
+
+  if (!data.users) {
+    return res.status(400).send({
+      message: "Request is missing memebers information",
+    });
+  }
+
+  try {
+    const teamUpdateQueryResult = await teamService.updateOneTeam(teamId, data);
+    const membersBeforeUpdate = teamUpdateQueryResult?.users;
+
+    let removedUsers = membersBeforeUpdate?.filter(
+      (user) => !data.users?.find((userId) => user.equals(userId))
+    );
+
+    let addedUsers = data.users?.filter(
+      (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
+    );
+
+    console.log(removedUsers);
+    console.log(addedUsers);
+
+    // compare with the new ids arrray
+    // depending on who is there update the users team reference
+
+    // const updateUsers = await data.userIds.forEach(async (id) => {
+    //   const user = await userService.getUserById(id);
+    //   if (!user) {
+    //     return;
+    //   }
+    //   const fetchedUserTeamArray =
+    //     user.teams.length > 0
+    //       ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
+    //       : [new mongoose.Types.ObjectId(teamId)];
+
+    //   await userService.updateUser(user?.id, {
+    //     teams: fetchedUserTeamArray,
+    //   });
+    // });
+
+    if (!teamUpdateQueryResult) {
+      return res.status(404).send({
+        message:
+          "Cannot update team with id=" + teamId + ". Team was not found",
+      });
+    } else {
+      return res.send({ message: "Team was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
   const id: string = req.params.id;
 
@@ -127,6 +183,7 @@ const teamController = {
   getTeamById,
   createNewTeam,
   updateOneTeam,
+  updateTeamMembers,
   deleteOneTeam,
 };
 

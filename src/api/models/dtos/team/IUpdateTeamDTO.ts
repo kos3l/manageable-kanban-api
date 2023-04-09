@@ -1,3 +1,4 @@
 export interface IUpdateTeamDTO {
-  name: string;
+  name?: string;
+  users?: string[];
 }

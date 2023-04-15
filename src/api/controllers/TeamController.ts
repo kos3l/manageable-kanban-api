@@ -57,7 +57,9 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
 
     if (!userToBeUpdated) {
       await session.abortTransaction();
-      return;
+      return res
+        .status(500)
+        .send({ message: "Can't find the current logged in user!" });
     }
 
     const updatedUser = {
@@ -76,7 +78,6 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
     return res.send(newTeam);
   } catch (error: any) {
     await session.abortTransaction();
-
     return res.status(500).send({ message: error.message });
   } finally {
     session.endSession();
@@ -105,8 +106,8 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
 const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
   const teamId: string = req.params.id;
   const data: IUpdateTeamDTO = req.body;
-
-  if (!data.users) {
+  // check if team has more than 1 users. Make sure no user will end up with no teams
+  if (!data || !data.users) {
     return res.status(400).send({
       message: "Request is missing memebers information",
     });
@@ -133,20 +134,44 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     // forbid from removing the creator of the team
     // forbid from removing team members if it makes the array empty
 
-    // const updateUsers = await data.userIds.forEach(async (id) => {
-    //   const user = await userService.getUserById(id);
-    //   if (!user) {
-    //     return;
-    //   }
-    //   const fetchedUserTeamArray =
-    //     user.teams.length > 0
-    //       ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
-    //       : [new mongoose.Types.ObjectId(teamId)];
+    if (removedUsers && removedUsers.length > 0) {
+      const isTeamCreatorRemoved = removedUsers.find((userId) =>
+        teamUpdateQueryResult?.createdBy.equals(userId)
+      );
 
-    //   await userService.updateUser(user?.id, {
-    //     teams: fetchedUserTeamArray,
-    //   });
-    // });
+      if (isTeamCreatorRemoved) {
+        return res
+          .status(500)
+          .send({ message: "Can't remove the team creator!" });
+      }
+
+      removedUsers.forEach(async (id) => {
+        const user = await userService.getUserById(id.toString());
+        if (user && user.teams.length > 0) {
+          const newUserTeam = user.teams.filter((team) => !team.equals(teamId));
+          const fetchedUserTeamArray = newUserTeam;
+          await userService.updateUser(user.id, {
+            teams: fetchedUserTeamArray,
+          });
+        }
+      });
+    }
+
+    if (addedUsers && addedUsers.length > 0) {
+      addedUsers.forEach(async (id) => {
+        const user = await userService.getUserById(id.toString());
+        if (user) {
+          const fetchedUserTeamArray =
+            user.teams.length > 0
+              ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
+              : [new mongoose.Types.ObjectId(teamId)];
+
+          await userService.updateUser(user.id, {
+            teams: fetchedUserTeamArray,
+          });
+        }
+      });
+    }
 
     if (!teamUpdateQueryResult) {
       return res.status(404).send({

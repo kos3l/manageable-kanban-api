@@ -1,6 +1,6 @@
 import { IApiError } from "../models/util/IApiError";
 
-class ApiError implements IApiError {
+export class ApiError implements IApiError {
   // probably should extend error class look into this
   statusCode: string;
   message: string;
@@ -10,5 +10,3 @@ class ApiError implements IApiError {
     this.message = message;
   }
 }
-
-module.exports = ApiError;

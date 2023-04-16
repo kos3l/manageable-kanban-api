@@ -1,43 +1,36 @@
-const userService = require("../services/UserService");
-const {
-  registerValidation,
-  loginValidation,
-} = require("../validations/AuthValidation");
+import userService from "../services/UserService";
+import authValidation from "../validations/AuthValidation";
 const ApiError = require("../utils/ApiError");
 const httpStatus = require("http-status");
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import { ICreateLoginDTO } from "../models/dtos/user/ICreateLoginDTO";
-import { HydratedDocument } from "mongoose";
-import { UserDocument, UserMethods } from "../models/documents/UserDocument";
 
-const register = async (
-  userBody: ICreateUserDTO
-): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
-  const { error } = registerValidation(userBody);
+const register = async (userBody: ICreateUserDTO) => {
+  const { error } = authValidation.registerValidation(userBody);
+
   if (error) {
     throw new ApiError(httpStatus[400], error.details[0].message);
   }
 
-  const emailExist: HydratedDocument<UserDocument, UserMethods> =
-    await userService.getUserByEmail(userBody.email);
+  const emailExist = await userService.getUserByEmail(userBody.email);
+
   if (emailExist) {
     throw new ApiError(httpStatus[400], "Email already exists");
   }
-  const newUser: HydratedDocument<UserDocument, UserMethods> =
-    await userService.createNewUser(userBody);
+
+  const newUser = await userService.createNewUser(userBody);
+
   return newUser;
 };
 
-const login = async (
-  userBody: ICreateLoginDTO
-): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
-  const { error } = loginValidation(userBody);
+const login = async (userBody: ICreateLoginDTO) => {
+  const { error } = authValidation.loginValidation(userBody);
+
   if (error) {
     throw new ApiError(httpStatus[400], error.details[0].message);
   }
 
-  const fetchedUser: HydratedDocument<UserDocument, UserMethods> | null =
-    await userService.getUserByEmail(userBody.email);
+  const fetchedUser = await userService.getUserByEmail(userBody.email);
 
   if (!fetchedUser) {
     throw new ApiError(httpStatus[400], "Email is wrong");
@@ -53,7 +46,9 @@ const login = async (
   return fetchedUser;
 };
 
-module.exports = {
+const authService = {
   register,
   login,
 };
+
+export default authService;

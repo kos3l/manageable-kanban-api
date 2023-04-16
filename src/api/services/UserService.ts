@@ -1,41 +1,52 @@
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
-import mongoose, { HydratedDocument } from "mongoose";
-import { UserDocument, UserMethods } from "../models/documents/UserDocument";
-import { UserModel } from "../models/types/UserModel";
-const User: HydratedDocument<
-  UserDocument,
-  UserModel
-> = require("../models/schemas/UserSchema.ts");
+import mongoose from "mongoose";
+import { User } from "../models/schemas/UserSchema";
+import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 
-const createNewUser = async (
-  user: ICreateUserDTO
-): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
-  const newUser: HydratedDocument<UserDocument, UserMethods> | null =
-    await User.create(user);
+const createNewUser = async (user: ICreateUserDTO) => {
+  const newUser = await User.create(user);
   return newUser;
 };
 
 const getUserById = async (
-  id: mongoose.Types.ObjectId
-): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
-  const user: HydratedDocument<UserDocument, UserMethods> | null =
-    await User.findById(id);
+  id: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  if (session) {
+    const user = await User.findById(id, {}, { session });
+    return user;
+  } else {
+    const user = await User.findById(id);
+    return user;
+  }
+};
+
+const getUserByEmail = async (email: string) => {
+  const user = await User.findOne({
+    email: email,
+  });
   return user;
 };
 
-const getUserByEmail = async (
-  email: string
-): Promise<HydratedDocument<UserDocument, UserMethods> | null> => {
-  const user: HydratedDocument<UserDocument, UserMethods> | null =
-    await User.findOne({
-      email: email,
-    });
-
-  return user;
+const updateUser = async (
+  id: string,
+  userDto: IUpdateUserDTO,
+  session?: mongoose.mongo.ClientSession
+) => {
+  if (session) {
+    const user = await User.findByIdAndUpdate(id, userDto, { session });
+    return user;
+  } else {
+    const user = await User.findByIdAndUpdate(id, userDto);
+    return user;
+  }
 };
 
-module.exports = {
+const userService = {
   createNewUser,
   getUserById,
   getUserByEmail,
+  updateUser,
 };
+
+export default userService;

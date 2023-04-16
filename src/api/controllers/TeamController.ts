@@ -6,6 +6,8 @@ import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import teamService from "../services/TeamService";
 import userService from "../services/UserService";
 import { conn } from "../../server";
+import { UserHelper } from "../helpers/UserHelper";
+
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
   if (!req.user) {
     return res.status(401).send({ message: "Unauthorised" });
@@ -62,16 +64,12 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
         .send({ message: "Can't find the current logged in user!" });
     }
 
-    const updatedUser = {
-      firstName: userToBeUpdated.firstName,
-      lastName: userToBeUpdated.lastName,
-      birthdate: userToBeUpdated.birthdate,
-      teams:
-        userToBeUpdated.teams.length > 0
-          ? [...userToBeUpdated.teams, newTeam._id]
-          : [newTeam._id],
-    };
+    userToBeUpdated.teams =
+      userToBeUpdated.teams.length > 0
+        ? [...userToBeUpdated.teams, newTeam._id]
+        : [newTeam._id];
 
+    const updatedUser = UserHelper.createUpdateUserDTO(userToBeUpdated);
     await userService.updateUser(userId, updatedUser);
 
     await session.commitTransaction();
@@ -107,23 +105,9 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
   const teamId: string = req.params.id;
   let teamPayload: IUpdateTeamDTO = req.body;
 
-  if (!teamPayload || !teamPayload.users) {
-    return res.status(400).send({
-      message: "Request is missing memebers information",
-    });
-  }
-  if (teamPayload.users.length === 0) {
-    return res.status(400).send({
-      message: "A team needs to have atleast one user!",
-    });
-  }
-
   const session = await conn.startSession();
   try {
     session.startTransaction();
-    const sanitisedUserIds = [...new Set(teamPayload.users)];
-    teamPayload.users = sanitisedUserIds;
-
     const teamUpdateQueryResult = await teamService.updateOneTeam(
       teamId,
       teamPayload,
@@ -142,57 +126,19 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     let removedUsers = membersBeforeUpdate?.filter(
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
+    if (removedUsers && removedUsers.length > 0) {
+      await teamService.removeMemembersFromATeam(
+        removedUsers.map((user) => user.toString()),
+        teamUpdateQueryResult,
+        session
+      );
+    }
 
     let addedUsers = teamPayload.users?.filter(
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );
-
-    if (removedUsers && removedUsers.length > 0) {
-      const isTeamCreatorRemoved = removedUsers.find((userId) =>
-        teamUpdateQueryResult?.createdBy.equals(userId)
-      );
-
-      if (isTeamCreatorRemoved) {
-        await session.abortTransaction();
-        return res
-          .status(500)
-          .send({ message: "Can't remove the team creator!" });
-      }
-
-      removedUsers.forEach(async (id) => {
-        const user = await userService.getUserById(id.toString());
-        if (user && user.teams.length > 0) {
-          const newUserTeam = user.teams.filter((team) => !team.equals(teamId));
-          const fetchedUserTeamArray = newUserTeam;
-          await userService.updateUser(
-            user.id,
-            {
-              teams: fetchedUserTeamArray,
-            },
-            session
-          );
-        }
-      });
-    }
-
     if (addedUsers && addedUsers.length > 0) {
-      addedUsers.forEach(async (id) => {
-        const user = await userService.getUserById(id.toString());
-        if (user && !user.teams.find((team) => team.equals(teamId))) {
-          const fetchedUserTeamArray =
-            user.teams.length > 0
-              ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
-              : [new mongoose.Types.ObjectId(teamId)];
-
-          await userService.updateUser(
-            user.id,
-            {
-              teams: fetchedUserTeamArray,
-            },
-            session
-          );
-        }
-      });
+      await teamService.addMemembersToATeam(addedUsers, teamId, session);
     }
 
     await session.commitTransaction();

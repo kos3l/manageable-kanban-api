@@ -8,8 +8,8 @@ export interface UserDocument {
   password: string;
   birthdate: Date;
   profilePicture?: string;
-  bio: string;
-  teams: [mongoose.Types.ObjectId];
+  bio?: string;
+  teams: mongoose.Types.ObjectId[];
 }
 
 export interface UserMethods {

@@ -28,9 +28,18 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
-const updateUser = async (id: string, userDto: IUpdateUserDTO) => {
-  const user = await User.findByIdAndUpdate(id, userDto);
-  return user;
+const updateUser = async (
+  id: string,
+  userDto: IUpdateUserDTO,
+  session?: mongoose.mongo.ClientSession
+) => {
+  if (session) {
+    const user = await User.findByIdAndUpdate(id, userDto, { session });
+    return user;
+  } else {
+    const user = await User.findByIdAndUpdate(id, userDto);
+    return user;
+  }
 };
 
 const userService = {

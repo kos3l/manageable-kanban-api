@@ -48,9 +48,18 @@ const createNewTeam = async (
   }
 };
 
-const updateOneTeam = async (id: string, updatedTeam: IUpdateTeamDTO) => {
-  const team = await Team.findByIdAndUpdate(id, updatedTeam);
-  return team;
+const updateOneTeam = async (
+  id: string,
+  updatedTeam: IUpdateTeamDTO,
+  session?: mongoose.mongo.ClientSession
+) => {
+  if (session) {
+    const team = await Team.findByIdAndUpdate(id, updatedTeam, { session });
+    return team;
+  } else {
+    const team = await Team.findByIdAndUpdate(id, updatedTeam);
+    return team;
+  }
 };
 
 const softDeleteOneTeam = async (id: string) => {

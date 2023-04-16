@@ -105,34 +105,47 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
 
 const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
   const teamId: string = req.params.id;
-  const data: IUpdateTeamDTO = req.body;
-  // check if team has more than 1 users. Make sure no user will end up with no teams
-  if (!data || !data.users) {
+  let teamPayload: IUpdateTeamDTO = req.body;
+
+  if (!teamPayload || !teamPayload.users) {
     return res.status(400).send({
       message: "Request is missing memebers information",
     });
   }
+  if (teamPayload.users.length === 0) {
+    return res.status(400).send({
+      message: "A team needs to have atleast one user!",
+    });
+  }
 
+  const session = await conn.startSession();
   try {
-    const teamUpdateQueryResult = await teamService.updateOneTeam(teamId, data);
+    session.startTransaction();
+    const sanitisedUserIds = [...new Set(teamPayload.users)];
+    teamPayload.users = sanitisedUserIds;
+
+    const teamUpdateQueryResult = await teamService.updateOneTeam(
+      teamId,
+      teamPayload,
+      session
+    );
     const membersBeforeUpdate = teamUpdateQueryResult?.users;
 
+    if (!teamUpdateQueryResult) {
+      await session.abortTransaction();
+      return res.status(404).send({
+        message:
+          "Cannot update team with id=" + teamId + ". Team was not found",
+      });
+    }
+
     let removedUsers = membersBeforeUpdate?.filter(
-      (user) => !data.users?.find((userId) => user.equals(userId))
+      (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
 
-    let addedUsers = data.users?.filter(
+    let addedUsers = teamPayload.users?.filter(
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );
-
-    console.log(removedUsers);
-    console.log(addedUsers);
-
-    // compare with the new ids arrray
-    // depending on who is there update the users team reference
-    // put it all into a transaction
-    // forbid from removing the creator of the team
-    // forbid from removing team members if it makes the array empty
 
     if (removedUsers && removedUsers.length > 0) {
       const isTeamCreatorRemoved = removedUsers.find((userId) =>
@@ -140,6 +153,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       );
 
       if (isTeamCreatorRemoved) {
+        await session.abortTransaction();
         return res
           .status(500)
           .send({ message: "Can't remove the team creator!" });
@@ -150,9 +164,13 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
         if (user && user.teams.length > 0) {
           const newUserTeam = user.teams.filter((team) => !team.equals(teamId));
           const fetchedUserTeamArray = newUserTeam;
-          await userService.updateUser(user.id, {
-            teams: fetchedUserTeamArray,
-          });
+          await userService.updateUser(
+            user.id,
+            {
+              teams: fetchedUserTeamArray,
+            },
+            session
+          );
         }
       });
     }
@@ -160,38 +178,61 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     if (addedUsers && addedUsers.length > 0) {
       addedUsers.forEach(async (id) => {
         const user = await userService.getUserById(id.toString());
-        if (user) {
+        if (user && !user.teams.find((team) => team.equals(teamId))) {
           const fetchedUserTeamArray =
             user.teams.length > 0
               ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
               : [new mongoose.Types.ObjectId(teamId)];
 
-          await userService.updateUser(user.id, {
-            teams: fetchedUserTeamArray,
-          });
+          await userService.updateUser(
+            user.id,
+            {
+              teams: fetchedUserTeamArray,
+            },
+            session
+          );
         }
       });
     }
 
-    if (!teamUpdateQueryResult) {
-      return res.status(404).send({
-        message:
-          "Cannot update team with id=" + teamId + ". Team was not found",
-      });
-    } else {
-      return res.send({ message: "Team was succesfully updated." });
-    }
+    await session.commitTransaction();
+    return res.send({ message: "Team was succesfully updated." });
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 
 const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
   const id: string = req.params.id;
+  const userId = req.user;
+
+  if (!userId) {
+    return res.status(401).send();
+  }
+
+  const teamToBeDeleted = await teamService.getTeamById(userId, id);
+  if (teamToBeDeleted == null) {
+    return res.status(400).send({
+      message: "Cannot delete a team created by another user",
+    });
+  }
+
+  const loggedInUser = await userService.getUserById(userId);
+  if (
+    loggedInUser?.teams.length == 1 &&
+    loggedInUser?.teams.find((team) => team.equals(id))
+  ) {
+    return res.status(400).send({
+      message:
+        "Cannot delete your only team! A user needs to belong to atleast one",
+    });
+  }
 
   try {
     const deletedTeam = await teamService.softDeleteOneTeam(id);
-
     if (!deletedTeam) {
       return res.status(404).send({
         message: "Cannot delete team with id=" + id + ". Team was not found",

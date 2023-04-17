@@ -97,18 +97,18 @@ describe("Team workflow tests", () => {
             chai
               .request(app)
               .get("/api/team")
-              .set("auth-token", token)
+              .set({ "auth-token": token })
               .end((err, res) => {
                 should().exist(res);
                 res.should.have.status(200);
                 res.body.should.be.a("array");
                 res.body.length.should.be.eql(1);
-                let teamId = res.body[0].id;
+                let teamId = res.body[0]._id;
 
                 chai
                   .request(app)
                   .get("/api/team/" + teamId)
-                  .set("auth-token", token)
+                  .set({ "auth-token": token })
                   .end((err, res) => {
                     should().exist(res);
                     res.should.have.status(200);

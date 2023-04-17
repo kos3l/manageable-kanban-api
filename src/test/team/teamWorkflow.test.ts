@@ -95,6 +95,7 @@ describe("Team workflow tests - Happy scenarios", () => {
             expect(res.status).to.equal(200);
             let token = res.body.data.token;
 
+            // Get team by id
             chai
               .request(app)
               .get("/api/team/" + teamId)
@@ -144,6 +145,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                 expect(res.body).to.have.property("createdBy").equal(userId);
                 expect(res.body).to.have.property("users").to.eql([userId]);
 
+                // Get all teams
                 chai
                   .request(app)
                   .get("/api/team")
@@ -213,7 +215,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/PUT:id/UpdateMembers - should register two users + login one user and add the other one to the team", (done) => {
-    // Register user
+    // Register user1
     chai
       .request(app)
       .post("/api/user/register")
@@ -224,6 +226,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         let teamId = res.body.data[1];
         let user1Id = res.body.data[0];
 
+        // Register user2
         chai
           .request(app)
           .post("/api/user/register")
@@ -253,6 +256,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                     should().exist(res);
                     res.should.have.status(200);
 
+                    // Get team by id
                     chai
                       .request(app)
                       .get("/api/team/" + teamId)
@@ -270,7 +274,25 @@ describe("Team workflow tests - Happy scenarios", () => {
                           .to.eql(updatedTeamMembersArray);
                         res.body.users.length.should.be.eql(2);
 
+                        // Add this once the User routes are in
+                        // chai
+                        //   .request(app)
+                        //   .get("/api/user/" + user2Id)
+                        //   .set({ "auth-token": token })
+                        //   .end((err, res) => {
+                        //     should().exist(res);
+                        //     res.should.have.status(200);
+                        //     res.body.should.be.a("object");
+                        //     expect(res.body)
+                        //       .to.have.property("teams")
+                        //       .that.is.a("array");
+                        //     expect(res.body)
+                        //       .to.have.property("teams")
+                        //       .to.include(teamId);
+                        //     res.body.teams.length.should.be.eql(2);
+
                         done();
+                        // });
                       });
                   });
               });
@@ -279,7 +301,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/PUT:id/UpdateMembers - should register two users + login one user, add the other one to the team and remove them", (done) => {
-    // Register user
+    // Register user1
     chai
       .request(app)
       .post("/api/user/register")
@@ -290,6 +312,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         let teamId = res.body.data[1];
         let user1Id = res.body.data[0];
 
+        // Register user2
         chai
           .request(app)
           .post("/api/user/register")
@@ -319,6 +342,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                     should().exist(res);
                     res.should.have.status(200);
 
+                    // Get team by id
                     chai
                       .request(app)
                       .get("/api/team/" + teamId)
@@ -336,6 +360,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                           .to.eql(updatedTeamMembersArray);
                         res.body.users.length.should.be.eql(2);
 
+                        // Remove the user 2 from team
                         chai
                           .request(app)
                           .put("/api/team/" + teamId + "/UpdateMembers")

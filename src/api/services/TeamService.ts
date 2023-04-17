@@ -30,6 +30,7 @@ const createNewTeam = async (
 ) => {
   const { error } = teamValidation.createTeamValidation(newTeam);
   if (error) {
+    // fix this to actually work the status code
     throw new ApiError(httpStatus[400], error.details[0].message);
   }
 

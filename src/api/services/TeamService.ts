@@ -54,14 +54,15 @@ const updateOneTeam = async (
   updatedTeam: IUpdateTeamDTO,
   session?: mongoose.mongo.ClientSession
 ) => {
-  const { error } = teamValidation.updateTeamMembersValidation(updatedTeam);
-  if (error) {
-    throw new ApiError(httpStatus[400], error.details[0].message);
-  }
-  const sanitisedUserIds = [...new Set(updatedTeam.users)];
-  updatedTeam.users = sanitisedUserIds;
-
   if (session) {
+    const { error } = teamValidation.updateTeamMembersValidation(updatedTeam);
+    if (error) {
+      throw new ApiError(httpStatus[400], error.details[0].message);
+    }
+
+    const sanitisedUserIds = [...new Set(updatedTeam.users)];
+    updatedTeam.users = sanitisedUserIds;
+
     const team = await Team.findByIdAndUpdate(id, updatedTeam, { session });
     return team;
   } else {

@@ -14,8 +14,8 @@ router.post("/", teamController.createNewTeam);
 // route: /api/team/:id
 router.put("/:id", teamController.updateOneTeam);
 
-// route: /api/team/:id/AddMembers
-router.put("/:id/AddMembers", teamController.updateTeamMembers);
+// route: /api/team/:id/UpdateMembers
+router.put("/:id/UpdateMembers", teamController.updateTeamMembers);
 
 // route: /api/team/:id
 router.delete("/:id", teamController.deleteOneTeam);

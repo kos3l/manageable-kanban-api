@@ -1015,6 +1015,10 @@ describe("Team workflow tests - Fail scenarios", () => {
                             res.should.have.status(200);
                             res.body.should.be.a("array");
                             res.body.length.should.be.eql(1);
+                            expect(res.body[0])
+                              .to.have.property("_id")
+                              .equal(teamIdUser2);
+
                             done();
                           });
                       });

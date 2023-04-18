@@ -959,7 +959,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/DELETE:id - should register + login a user, try to delete another user's team", (done) => {
-    // Register user
+    // Register user 1
     chai
       .request(app)
       .post("/api/user/register")
@@ -967,7 +967,7 @@ describe("Team workflow tests - Fail scenarios", () => {
       .end((err, res) => {
         expect(res.status).to.equal(200);
         expect(res.body).to.be.a("object");
-
+        // Register user 2
         chai
           .request(app)
           .post("/api/user/register")

@@ -7,9 +7,9 @@ import chaiHttp from "chai-http";
 import { expect } from "chai";
 chai.use(chaiHttp);
 
-afterEach((done) => {
-  User.deleteMany({}).then((res) => Team.deleteMany({}).then((res) => done()));
-});
+// afterEach((done) => {
+//   User.deleteMany({}).then((res) => Team.deleteMany({}).then((res) => done()));
+// });
 
 describe("Team workflow tests - Happy scenarios", () => {
   // Mock data

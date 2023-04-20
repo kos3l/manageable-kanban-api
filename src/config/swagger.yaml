@@ -1,11 +1,13 @@
 openapi: 3.0.0
 info:
-  title: MEN REST API Boilerplate
+  title: MEN API - Manageable Kanban
   description: MongoDB ExpressJS NodeJS REST API Typescript
   version: 1.0.0
 servers:
   - url: http://localhost:4000/api/
     description: Localhost development server
+  - url: https://manageableapi.onrender.com
+    description: Deployed production server
 components:
   securitySchemes:
     ApiKeyAuth: # arbitrary name for the security scheme
@@ -31,12 +33,199 @@ components:
         birthdate:
           type: string
           format: date-time
+        profilePicture:
+          type: string
+        bio:
+          type: string
+        teams:
+          type: array
+          items:
+            type: string
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - password
+        - birthdate
+        - teams
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        picture:
+          type: string
+        users:
+          type: array
+          items:
+            type: string
+        projects:
+          type: array
+          items:
+            type: string
+        isDeleted:
+          type: boolean
+        createdBy:
+          type: string
+        deletedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - createdBy
+        - user
+        - isDeleted
+        - createdAt
+        - updatedAt
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        techStack:
+          type: array
+          items:
+            type: string
+        status:
+          type: array
+          items:
+            type: number
+            enum: [1, 2, 3]
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        teamId:
+          type: string
+        columns:
+          type: array
+          items:
+            $ref: "#/components/schemas/Column"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - techStack
+        - status
+        - startDate
+        - endDate
+        - columns
+        - teamId
+        - createdAt
+        - updatedAt
+
+    Label:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - color
+        - createdAt
+        - updatedAt
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        picture:
+          type: string
+        columnId:
+          type: string
+        labels:
+          type: array
+          items:
+            $ref: "#/components/schemas/Label"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - startDate
+        - endDate
+        - columnId
+        - createdAt
+        - updatedAt
+
+    Column:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/Task"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - name
+        - tasks
+        - createdAt
+        - updatedAt
 
     ICreateLoginDTO:
       type: object
@@ -50,6 +239,9 @@ components:
           type: string
           minLength: 6
           maxLength: 255
+      required:
+        - email
+        - password
 
     ICreateUserDTO:
       type: object
@@ -74,14 +266,68 @@ components:
         birthdate:
           type: string
           format: date-time
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - birthdate
 
+    IUpdateUserDTO:
+      type: object
+      properties:
+        firstName:
+          type: string
+          minLength: 3
+          maxLength: 255
+        lastName:
+          type: string
+          minLength: 3
+          maxLength: 255
+        bio:
+          type: string
+          minLength: 6
+          maxLength: 1024
+        birthdate:
+          type: string
+          format: date-time
+        teams:
+          type: array
+          items:
+            type: string
+
+    ICreateTeamDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        createdBy:
+          type: string
+        users:
+          type: array
+            items:
+              type: string
+      required:
+        - name
+        - createdBy
+        - users
+
+    IUpdateTeamDTO:
+      type: object
+      properties:
+        name:
+          type: string
+        users:
+          type: array
+            items:
+              type: string
 paths:
-  /user/register:
+  /auth/register:
     post:
-      summary: Register a new User
+      summary: Registers a new User
       description: Register a new User in the database
       tags:
-        - user
+        - auth
       requestBody:
         required: true
         content:
@@ -90,7 +336,7 @@ paths:
               $ref: "#/components/schemas/ICreateUserDTO"
 
       responses:
-        201:
+        200:
           description: User created succesfully
           content:
             application/json:
@@ -99,15 +345,17 @@ paths:
                 properties:
                   error:
                     type: string
-                  _id:
-                    type: string
+                  data:
+                    type: array
+                    items:
+                      type: string
 
-  /user/login:
+  /auth/login:
     post:
-      summary: Login a User
+      summary: Signs in a User
       description: Login a User in order to get JWT token (auth-token)
       tags:
-        - user
+        - auth
       requestBody:
         required: true
         content:
@@ -126,4 +374,248 @@ paths:
                   error:
                     type: string
                   data:
+                    type: array
+                    items:
+                      type: string
+
+  /user/{id}:
+    get:
+      summary: Gets User by id
+      description: Get the individual user that exists in the system.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - user
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Requested user
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/User"
+    put:
+      summary: Updates one user
+      description: Update user's personal information. The "teams" property will be removed from the body if included in the payload. The teams property is updated automatically by other endpoints
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/IUpdateUserDTO"
+      parameters:
+        - name: id
+          in: path
+          description: User ID
+          required: true
+          schema:
+            type: string 
+      responses:
+        201:
+          description: Success message
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
                     type: string
+
+  /user/email:
+    get:
+      summary: Gets User by email
+      description: Get the individual user that exists in the system.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              email:
+                type: string
+                format: email
+
+      responses:
+        200:
+          description: Requested user
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/User"
+
+
+  /team:
+    get:
+      summary: Gets all teams
+      description: Returns all teams of the logged in user. It includes teams created by the user and the ones they are a member of. This endpoint only returns teams which were not marked as deleted.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      responses:
+        200:
+          description: Array of teams which have not been marked as deleted.
+          content:
+            application/json:
+              schema:
+                type: array
+                  items:
+                    $ref: "#/components/schemas/Team"
+    post:
+      summary: Creates a new team
+      description: Add a new team for the logged in user.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/ICreateTeamDTO"     
+      responses:
+        200:
+          description: New team with the current logged in user as the creator and only member right now
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Team"    
+   
+
+  /team/{id}:
+    get:
+      summary: Gets a Team by id
+      description: Returns an individual team that exists in the system and is related to the logged in user. Only teams the user is a member or a creator is valid to be fetched by id.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      parameters:
+        - name: id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string        
+      responses:
+        200:
+          description: Array of teams which have not been marked as deleted.
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Team"                    
+    put:
+      summary: Updates one team
+      description: Update team's details. User's assigned to this team won't be updated through this endpoint so the property will have no effect
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      parameters:
+        - name: id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string     
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+                items: 
+                  $ref: "#/components/schemas/IUpdateTeamDTO"     
+      responses:
+        201:
+          description: Updated team
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string  
+    delete:
+      summary: Soft deletes a team
+      description: Marks a team as deleted thus it will not be included in get endpoints responses anymore. Logged in user can only delete teams created by themselved and only if there have more than one teams they belong to at the moment.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      parameters:
+        - name: id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string     
+      responses:
+        201:
+          description: Soft deleted the team
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string     
+
+  /team/{id}/UpdateMembers:
+    put:
+      summary: Updates team members
+      description: Remove or add team members. The team's "users" new value will be exactly the same array you send in the payload. Removing the creator or sending an empty array is not allowed.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - team
+      parameters:
+        - name: id
+          in: path
+          description: Team ID
+          required: true
+          schema:
+            type: string     
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+                items: 
+                  $ref: "#/components/schemas/IUpdateTeamDTO"     
+      responses:
+        201:
+          description: Updated team
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string                                                           
+
+                    
+
+                                                      
+
+                    

@@ -136,7 +136,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .request(app)
               .post("/api/team")
               .set({ "auth-token": token })
-              .send([newTeam])
+              .send(newTeam)
               .end((err, res) => {
                 should().exist(res);
                 res.should.have.status(200);
@@ -425,7 +425,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .request(app)
               .post("/api/team")
               .set({ "auth-token": token })
-              .send([newTeam])
+              .send(newTeam)
               .end((err, res) => {
                 should().exist(res);
                 res.should.have.status(200);
@@ -570,7 +570,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     chai
       .request(app)
       .post("/api/team")
-      .send([newTeam])
+      .send(newTeam)
       .end((err, res) => {
         should().exist(res);
         res.should.have.status(401);

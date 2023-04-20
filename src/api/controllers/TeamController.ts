@@ -37,8 +37,7 @@ const getTeamById = async (req: ExtendedRequest, res: Response) => {
 };
 
 const createNewTeam = async (req: ExtendedRequest, res: Response) => {
-  const data = req.body;
-  const newTeam = data[0];
+  const newTeam = req.body;
 
   if (!req.user) {
     return res.status(401).send({ message: "Unauthorised" });

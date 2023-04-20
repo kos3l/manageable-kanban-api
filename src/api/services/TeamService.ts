@@ -18,7 +18,11 @@ const getAllTeams = async (userId: string) => {
 
 const getTeamById = async (userId: string, teamId: string) => {
   const team = await Team.findById(teamId);
-  if (team && !team.createdBy.equals(userId)) {
+  if (
+    team &&
+    !team.createdBy.equals(userId) &&
+    !team.users.includes(new mongoose.Types.ObjectId(userId))
+  ) {
     return null;
   }
   return team;

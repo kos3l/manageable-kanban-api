@@ -305,8 +305,8 @@ components:
           type: string
         users:
           type: array
-            items:
-              type: string
+          items:
+            type: string
       required:
         - name
         - createdBy
@@ -319,8 +319,8 @@ components:
           type: string
         users:
           type: array
-            items:
-              type: string
+          items:
+            type: string
 paths:
   /auth/register:
     post:
@@ -420,7 +420,7 @@ paths:
           description: User ID
           required: true
           schema:
-            type: string 
+            type: string
       responses:
         201:
           description: Success message
@@ -458,7 +458,6 @@ paths:
                 type: object
                 $ref: "#/components/schemas/User"
 
-
   /team:
     get:
       summary: Gets all teams
@@ -474,8 +473,8 @@ paths:
             application/json:
               schema:
                 type: array
-                  items:
-                    $ref: "#/components/schemas/Team"
+                items:
+                  $ref: "#/components/schemas/Team"
     post:
       summary: Creates a new team
       description: Add a new team for the logged in user.
@@ -489,7 +488,7 @@ paths:
           application/json:
             schema:
               type: object
-              $ref: "#/components/schemas/ICreateTeamDTO"     
+              $ref: "#/components/schemas/ICreateTeamDTO"
       responses:
         200:
           description: New team with the current logged in user as the creator and only member right now
@@ -497,8 +496,7 @@ paths:
             application/json:
               schema:
                 type: object
-                $ref: "#/components/schemas/Team"    
-   
+                $ref: "#/components/schemas/Team"
 
   /team/{id}:
     get:
@@ -514,7 +512,7 @@ paths:
           description: Team ID
           required: true
           schema:
-            type: string        
+            type: string
       responses:
         200:
           description: Array of teams which have not been marked as deleted.
@@ -522,7 +520,7 @@ paths:
             application/json:
               schema:
                 type: object
-                $ref: "#/components/schemas/Team"                    
+                $ref: "#/components/schemas/Team"
     put:
       summary: Updates one team
       description: Update team's details. User's assigned to this team won't be updated through this endpoint so the property will have no effect
@@ -536,15 +534,13 @@ paths:
           description: Team ID
           required: true
           schema:
-            type: string     
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-                items: 
-                  $ref: "#/components/schemas/IUpdateTeamDTO"     
+              $ref: "#/components/schemas/IUpdateTeamDTO"
       responses:
         201:
           description: Updated team
@@ -554,7 +550,7 @@ paths:
                 type: object
                 properties:
                   message:
-                    type: string  
+                    type: string
     delete:
       summary: Soft deletes a team
       description: Marks a team as deleted thus it will not be included in get endpoints responses anymore. Logged in user can only delete teams created by themselved and only if there have more than one teams they belong to at the moment.
@@ -568,7 +564,7 @@ paths:
           description: Team ID
           required: true
           schema:
-            type: string     
+            type: string
       responses:
         201:
           description: Soft deleted the team
@@ -578,7 +574,7 @@ paths:
                 type: object
                 properties:
                   message:
-                    type: string     
+                    type: string
 
   /team/{id}/UpdateMembers:
     put:
@@ -594,15 +590,13 @@ paths:
           description: Team ID
           required: true
           schema:
-            type: string     
+            type: string
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: object
-                items: 
-                  $ref: "#/components/schemas/IUpdateTeamDTO"     
+              $ref: "#/components/schemas/IUpdateTeamDTO"
       responses:
         201:
           description: Updated team
@@ -612,10 +606,4 @@ paths:
                 type: object
                 properties:
                   message:
-                    type: string                                                           
-
-                    
-
-                                                      
-
-                    
+                    type: string

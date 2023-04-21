@@ -4,6 +4,7 @@ import mongoose from "mongoose";
 import yaml from "yamljs";
 import bodyParser from "body-parser";
 import authRoutes from "./api/routes/AuthRoutes";
+import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
 import swaggerUi from "swagger-ui-express";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
@@ -15,7 +16,8 @@ const app: express.Application = express();
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 app.use(bodyParser.json());
 
-app.use("/api/user", authRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
 
 mongoose

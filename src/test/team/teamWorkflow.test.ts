@@ -46,7 +46,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -54,7 +54,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -79,7 +79,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -89,7 +89,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -115,7 +115,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -125,7 +125,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -136,7 +136,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .request(app)
               .post("/api/team")
               .set({ "auth-token": token })
-              .send([newTeam])
+              .send(newTeam)
               .end((err, res) => {
                 should().exist(res);
                 res.should.have.status(200);
@@ -167,7 +167,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -177,7 +177,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -191,7 +191,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .send(updatedTeam)
               .end((err, res) => {
                 should().exist(res);
-                res.should.have.status(200);
+                res.should.have.status(201);
 
                 // Get team by id
                 chai
@@ -218,7 +218,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user1
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -229,7 +229,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Register user2
         chai
           .request(app)
-          .post("/api/user/register")
+          .post("/api/auth/register")
           .send(user2)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -239,7 +239,7 @@ describe("Team workflow tests - Happy scenarios", () => {
             // Login user
             chai
               .request(app)
-              .post("/api/user/login")
+              .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
@@ -254,7 +254,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                   .send({ users: updatedTeamMembersArray })
                   .end((err, res) => {
                     should().exist(res);
-                    res.should.have.status(200);
+                    res.should.have.status(201);
 
                     // Get team by id
                     chai
@@ -277,7 +277,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                         // Add this once the User routes are in
                         // chai
                         //   .request(app)
-                        //   .get("/api/user/" + user2Id)
+                        //   .get("/api/auth/" + user2Id)
                         //   .set({ "auth-token": token })
                         //   .end((err, res) => {
                         //     should().exist(res);
@@ -304,7 +304,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user1
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -315,7 +315,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Register user2
         chai
           .request(app)
-          .post("/api/user/register")
+          .post("/api/auth/register")
           .send(user2)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -325,7 +325,7 @@ describe("Team workflow tests - Happy scenarios", () => {
             // Login user
             chai
               .request(app)
-              .post("/api/user/login")
+              .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
@@ -340,7 +340,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                   .send({ users: updatedTeamMembersArray })
                   .end((err, res) => {
                     should().exist(res);
-                    res.should.have.status(200);
+                    res.should.have.status(201);
 
                     // Get team by id
                     chai
@@ -368,7 +368,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                           .send({ users: [user1Id] })
                           .end((err, res) => {
                             should().exist(res);
-                            res.should.have.status(200);
+                            res.should.have.status(201);
 
                             chai
                               .request(app)
@@ -403,7 +403,7 @@ describe("Team workflow tests - Happy scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -414,7 +414,7 @@ describe("Team workflow tests - Happy scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -425,7 +425,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .request(app)
               .post("/api/team")
               .set({ "auth-token": token })
-              .send([newTeam])
+              .send(newTeam)
               .end((err, res) => {
                 should().exist(res);
                 res.should.have.status(200);
@@ -451,7 +451,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                       .set({ "auth-token": token })
                       .end((err, res) => {
                         should().exist(res);
-                        res.should.have.status(200);
+                        res.should.have.status(201);
 
                         chai
                           .request(app)
@@ -534,7 +534,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -544,7 +544,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -570,7 +570,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     chai
       .request(app)
       .post("/api/team")
-      .send([newTeam])
+      .send(newTeam)
       .end((err, res) => {
         should().exist(res);
         res.should.have.status(401);
@@ -584,7 +584,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -594,7 +594,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -636,7 +636,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -646,7 +646,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -684,7 +684,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //   // Register user1
   //   chai
   //     .request(app)
-  //     .post("/api/user/register")
+  //     .post("/api/auth/register")
   //     .send(user1)
   //     .end((err, res) => {
   //       expect(res.status).to.equal(200);
@@ -695,7 +695,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //       // Register user2
   //       chai
   //         .request(app)
-  //         .post("/api/user/register")
+  //         .post("/api/auth/register")
   //         .send(user2)
   //         .end((err, res) => {
   //           expect(res.status).to.equal(200);
@@ -705,7 +705,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //           // Login user
   //           chai
   //             .request(app)
-  //             .post("/api/user/login")
+  //             .post("/api/auth/login")
   //             .send(userLogin)
   //             .end((err, res) => {
   //               expect(res.status).to.equal(200);
@@ -743,7 +743,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //                       // Add this once the User routes are in
   //                       // chai
   //                       //   .request(app)
-  //                       //   .get("/api/user/" + user2Id)
+  //                       //   .get("/api/auth/" + user2Id)
   //                       //   .set({ "auth-token": token })
   //                       //   .end((err, res) => {
   //                       //     should().exist(res);
@@ -770,7 +770,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //   // Register user1
   //   chai
   //     .request(app)
-  //     .post("/api/user/register")
+  //     .post("/api/auth/register")
   //     .send(user1)
   //     .end((err, res) => {
   //       expect(res.status).to.equal(200);
@@ -781,7 +781,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //       // Register user2
   //       chai
   //         .request(app)
-  //         .post("/api/user/register")
+  //         .post("/api/auth/register")
   //         .send(user2)
   //         .end((err, res) => {
   //           expect(res.status).to.equal(200);
@@ -791,7 +791,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   //           // Login user
   //           chai
   //             .request(app)
-  //             .post("/api/user/login")
+  //             .post("/api/auth/login")
   //             .send(userLogin)
   //             .end((err, res) => {
   //               expect(res.status).to.equal(200);
@@ -869,7 +869,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -879,7 +879,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -912,7 +912,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -922,7 +922,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Login user
         chai
           .request(app)
-          .post("/api/user/login")
+          .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -962,7 +962,7 @@ describe("Team workflow tests - Fail scenarios", () => {
     // Register user 1
     chai
       .request(app)
-      .post("/api/user/register")
+      .post("/api/auth/register")
       .send(user1)
       .end((err, res) => {
         expect(res.status).to.equal(200);
@@ -970,7 +970,7 @@ describe("Team workflow tests - Fail scenarios", () => {
         // Register user 2
         chai
           .request(app)
-          .post("/api/user/register")
+          .post("/api/auth/register")
           .send(user2)
           .end((err, res) => {
             expect(res.status).to.equal(200);
@@ -980,7 +980,7 @@ describe("Team workflow tests - Fail scenarios", () => {
             // Login user
             chai
               .request(app)
-              .post("/api/user/login")
+              .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
@@ -1000,7 +1000,7 @@ describe("Team workflow tests - Fail scenarios", () => {
 
                     chai
                       .request(app)
-                      .post("/api/user/login")
+                      .post("/api/auth/login")
                       .send(userLogin2)
                       .end((err, res) => {
                         expect(res.status).to.equal(200);

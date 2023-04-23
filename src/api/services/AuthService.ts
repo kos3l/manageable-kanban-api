@@ -9,13 +9,13 @@ const register = async (userBody: ICreateUserDTO) => {
   const { error } = authValidation.registerValidation(userBody);
 
   if (error) {
-    throw new ApiError(httpStatus[400], error.details[0].message);
+    throw new Error(error.details[0].message);
   }
 
   const emailExist = await userService.getUserByEmail(userBody.email);
 
   if (emailExist) {
-    throw new ApiError(httpStatus[400], "Email already exists");
+    throw new Error("Email already exists");
   }
 
   const newUser = await userService.createNewUser(userBody);
@@ -27,13 +27,13 @@ const login = async (userBody: ICreateLoginDTO) => {
   const { error } = authValidation.loginValidation(userBody);
 
   if (error) {
-    throw new ApiError(httpStatus[400], error.details[0].message);
+    throw new Error(error.details[0].message);
   }
 
   const fetchedUser = await userService.getUserByEmail(userBody.email);
 
   if (!fetchedUser) {
-    throw new ApiError(httpStatus[400], "Email is wrong");
+    throw new Error("Email is wrong");
   }
 
   const validPassword: string = await fetchedUser.comparePassword(
@@ -41,7 +41,7 @@ const login = async (userBody: ICreateLoginDTO) => {
   );
 
   if (!validPassword) {
-    throw new ApiError(httpStatus[400], "Wrong password");
+    throw new Error("Wrong password");
   }
   return fetchedUser;
 };

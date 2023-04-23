@@ -40,7 +40,7 @@ const updateOneUser = async (req: ExtendedRequest, res: Response) => {
     const { error } = userValidation.updateUserValidation(updatedUser);
 
     if (error) {
-      throw new ApiError(httpStatus[400], error.details[0].message);
+      throw new Error(error.details[0].message);
     }
 
     await userService.updateUser(userId, updatedUser);

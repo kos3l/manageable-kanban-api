@@ -35,7 +35,7 @@ const register = async (req: ExtendedRequest, res: Response) => {
     return res.json({ error: null, data: [savedUser._id, firstTeam._id] });
   } catch (error: any) {
     await session.abortTransaction();
-    return res.status(400).json(error);
+    return res.status(400).send({ message: error.message });
   } finally {
     session.endSession();
   }

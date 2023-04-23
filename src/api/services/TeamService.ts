@@ -35,14 +35,14 @@ const createNewTeam = async (
   const { error } = teamValidation.createTeamValidation(newTeam);
   if (error) {
     // fix this to actually work the status code
-    throw new ApiError(httpStatus[400], error.details[0].message);
+    throw new Error(error.details[0].message);
   }
 
   const userExists = await userService.getUserById(
     newTeam.createdBy.toString()
   );
   if (!userExists) {
-    throw new ApiError(httpStatus[400], "User does not exist!");
+    throw new Error("User does not exist!");
   }
 
   if (session) {
@@ -62,7 +62,7 @@ const updateOneTeam = async (
   if (session) {
     const { error } = teamValidation.updateTeamMembersValidation(updatedTeam);
     if (error) {
-      throw new ApiError(httpStatus[400], error.details[0].message);
+      throw new Error(error.details[0].message);
     }
 
     const sanitisedUserIds = [...new Set(updatedTeam.users)];
@@ -94,7 +94,7 @@ const removeMemembersFromATeam = async (
   );
 
   if (isTeamCreatorRemoved) {
-    throw new ApiError(httpStatus[500], "Can't remove the team creator!");
+    throw Error("Can't remove the team creator!");
   }
 
   for (const id of removedUsers) {

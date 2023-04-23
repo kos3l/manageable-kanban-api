@@ -7,11 +7,20 @@ import authRoutes from "./api/routes/AuthRoutes";
 import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
 import swaggerUi from "swagger-ui-express";
+import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
 
 const swaggerDefinition = yaml.load("./src/config/swagger.yaml");
 
 const app: express.Application = express();
+
+// Use cors library
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "DELETE", "UPDATE", "PUT"],
+  })
+);
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 app.use(bodyParser.json());

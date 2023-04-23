@@ -6,4 +6,5 @@ export interface IUpdateUserDTO {
   birthdate?: Date;
   bio?: string;
   teams?: mongoose.Types.ObjectId[];
+  refreshToken?: string;
 }

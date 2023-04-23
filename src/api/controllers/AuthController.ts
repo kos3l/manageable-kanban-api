@@ -48,15 +48,26 @@ const login = async (req: ExtendedRequest, res: Response) => {
     const username: string =
       loggedInUser.firstName + " " + loggedInUser.lastName;
 
-    const token: string = await tokenService.generateToken(
+    const tokens: string[] = await tokenService.generateToken(
       username,
       loggedInUser.id
     );
 
-    return res.header("auth-token", token).json({
-      error: null,
-      data: { token },
+    const accessToken = tokens[0];
+    const refreshToken = tokens[1];
+
+    userService.updateUser(loggedInUser.id, {
+      refreshToken: refreshToken,
     });
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      //for localhost set to false
+      secure: false,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.json({ accessToken });
   } catch (error) {
     return res.status(400).json(error);
   }

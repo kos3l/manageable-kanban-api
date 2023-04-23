@@ -63,8 +63,8 @@ const login = async (req: ExtendedRequest, res: Response) => {
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",
-      //for localhost set to false
-      secure: false,
+      //issues on local host it needs to be false for postman to work
+      secure: true,
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.json({ accessToken });

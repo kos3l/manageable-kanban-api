@@ -8,4 +8,7 @@ router.post("/register", authController.register);
 // route: /api/auth/login/
 router.post("/login", authController.login);
 
+// route: /api/auth/logout/
+router.get("/logout", authController.logout);
+
 export = router;

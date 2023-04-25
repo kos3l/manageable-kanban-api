@@ -44,6 +44,8 @@ describe("Team workflow tests - Happy scenarios", () => {
 
   it("/GET - should register (which creates one team for the user by default) + login a user and get all teams (1 team that was created by default)", (done) => {
     // Register user
+
+    const agent = chai.request.agent(app);
     chai
       .request(app)
       .post("/api/auth/register")
@@ -52,16 +54,16 @@ describe("Team workflow tests - Happy scenarios", () => {
         expect(res.status).to.equal(200);
         expect(res.body).to.be.a("object");
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
+            console.log(res);
+            expect(res).to.have.cookie("jwt");
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            let token = res.body.accessToken;
             // Get all teams
-            chai
-              .request(app)
+            agent
               .get("/api/team")
               .set("auth-token", token)
               .end((err, res) => {
@@ -77,6 +79,8 @@ describe("Team workflow tests - Happy scenarios", () => {
 
   it("/GET:id - should register + login a user and get a teams by id (1 team that was created by default)", (done) => {
     // Register user
+
+    const agent = chai.request.agent(app);
     chai
       .request(app)
       .post("/api/auth/register")
@@ -85,19 +89,17 @@ describe("Team workflow tests - Happy scenarios", () => {
         expect(res.status).to.equal(200);
         expect(res.body).to.be.a("object");
         let teamId = res.body.data[1];
-
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
+            expect(res).to.have.cookie("jwt");
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            let token = res.body.accessToken;
 
             // Get team by id
-            chai
-              .request(app)
+            agent
               .get("/api/team/" + teamId)
               .set({ "auth-token": token })
               .end((err, res) => {
@@ -113,6 +115,8 @@ describe("Team workflow tests - Happy scenarios", () => {
 
   it("/POST - should register + login a user and create a team", (done) => {
     // Register user
+
+    const agent = chai.request.agent(app);
     chai
       .request(app)
       .post("/api/auth/register")
@@ -123,17 +127,16 @@ describe("Team workflow tests - Happy scenarios", () => {
         let userId = res.body.data[0];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
             // Create a team
-            chai
-              .request(app)
+            agent
               .post("/api/team")
               .set({ "auth-token": token })
               .send(newTeam)
@@ -146,8 +149,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                 expect(res.body).to.have.property("users").to.eql([userId]);
 
                 // Get all teams
-                chai
-                  .request(app)
+                agent
                   .get("/api/team")
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -164,6 +166,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/PUT:id - should register + login a user and update the default team", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -175,17 +178,16 @@ describe("Team workflow tests - Happy scenarios", () => {
         let teamId = res.body.data[1];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
             // Update a team
-            chai
-              .request(app)
+            agent
               .put("/api/team/" + teamId)
               .set({ "auth-token": token })
               .send(updatedTeam)
@@ -194,8 +196,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                 res.should.have.status(201);
 
                 // Get team by id
-                chai
-                  .request(app)
+                agent
                   .get("/api/team/" + teamId)
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -215,6 +216,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/PUT:id/UpdateMembers - should register two users + login one user and add the other one to the team", (done) => {
+    const agent = chai.request.agent(app);
     // Register user1
     chai
       .request(app)
@@ -237,18 +239,17 @@ describe("Team workflow tests - Happy scenarios", () => {
             let user2Id = res.body.data[0];
 
             // Login user
-            chai
-              .request(app)
+            agent
               .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
-                let token = res.body.data.token;
+                expect(res).to.have.cookie("jwt");
+                let token = res.body.accessToken;
                 let updatedTeamMembersArray = [user1Id, user2Id];
 
                 // Add user 2 to the default team of user 1
-                chai
-                  .request(app)
+                agent
                   .put("/api/team/" + teamId + "/UpdateMembers")
                   .set({ "auth-token": token })
                   .send({ users: updatedTeamMembersArray })
@@ -257,8 +258,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                     res.should.have.status(201);
 
                     // Get team by id
-                    chai
-                      .request(app)
+                    agent
                       .get("/api/team/" + teamId)
                       .set({ "auth-token": token })
                       .end((err, res) => {
@@ -301,6 +301,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/PUT:id/UpdateMembers - should register two users + login one user, add the other one to the team and remove them", (done) => {
+    const agent = chai.request.agent(app);
     // Register user1
     chai
       .request(app)
@@ -323,18 +324,17 @@ describe("Team workflow tests - Happy scenarios", () => {
             let user2Id = res.body.data[0];
 
             // Login user
-            chai
-              .request(app)
+            agent
               .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
-                let token = res.body.data.token;
+                expect(res).to.have.cookie("jwt");
+                let token = res.body.accessToken;
                 let updatedTeamMembersArray = [user1Id, user2Id];
 
                 // Add user 2 to the default team of user 1
-                chai
-                  .request(app)
+                agent
                   .put("/api/team/" + teamId + "/UpdateMembers")
                   .set({ "auth-token": token })
                   .send({ users: updatedTeamMembersArray })
@@ -343,8 +343,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                     res.should.have.status(201);
 
                     // Get team by id
-                    chai
-                      .request(app)
+                    agent
                       .get("/api/team/" + teamId)
                       .set({ "auth-token": token })
                       .end((err, res) => {
@@ -361,8 +360,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                         res.body.users.length.should.be.eql(2);
 
                         // Remove the user 2 from team
-                        chai
-                          .request(app)
+                        agent
                           .put("/api/team/" + teamId + "/UpdateMembers")
                           .set({ "auth-token": token })
                           .send({ users: [user1Id] })
@@ -370,8 +368,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                             should().exist(res);
                             res.should.have.status(201);
 
-                            chai
-                              .request(app)
+                            agent
                               .get("/api/team/" + teamId)
                               .set({ "auth-token": token })
                               .end((err, res) => {
@@ -400,6 +397,7 @@ describe("Team workflow tests - Happy scenarios", () => {
   });
 
   it("/DELETE:id - should register + login a user, create a team and delete it", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -412,17 +410,16 @@ describe("Team workflow tests - Happy scenarios", () => {
         let userId = res.body.data[0];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
             // Create a team
-            chai
-              .request(app)
+            agent
               .post("/api/team")
               .set({ "auth-token": token })
               .send(newTeam)
@@ -435,8 +432,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                 expect(res.body).to.have.property("users").to.eql([userId]);
                 let newTeamId = res.body._id;
 
-                chai
-                  .request(app)
+                agent
                   .get("/api/team")
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -445,16 +441,14 @@ describe("Team workflow tests - Happy scenarios", () => {
                     res.body.should.be.a("array");
                     res.body.length.should.be.eql(2);
 
-                    chai
-                      .request(app)
+                    agent
                       .delete("/api/team/" + newTeamId)
                       .set({ "auth-token": token })
                       .end((err, res) => {
                         should().exist(res);
                         res.should.have.status(201);
 
-                        chai
-                          .request(app)
+                        agent
                           .get("/api/team")
                           .set({ "auth-token": token })
                           .end((err, res) => {
@@ -475,7 +469,6 @@ describe("Team workflow tests - Happy scenarios", () => {
       });
   });
 });
-
 describe("Team workflow tests - Fail scenarios", () => {
   // Mock data
   let user1 = {
@@ -531,6 +524,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/GET:id - should register + login a user, try to get team by id with no token", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -542,13 +536,12 @@ describe("Team workflow tests - Fail scenarios", () => {
         let teamId = res.body.data[1] + 123;
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            let token = res.body.accessToken;
 
             // Get team by id
             chai
@@ -566,6 +559,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/POST - try to create a team with no token", (done) => {
+    const agent = chai.request.agent(app);
     // Create a team
     chai
       .request(app)
@@ -581,6 +575,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/POST - should register + login a user and create a team with invalid input", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -592,17 +587,16 @@ describe("Team workflow tests - Fail scenarios", () => {
         let teamId = res.body.data[1];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
             // Create a team
-            chai
-              .request(app)
+            agent
               .post("/api/team")
               .set({ "auth-token": token })
               .send([invalidTeam])
@@ -612,8 +606,7 @@ describe("Team workflow tests - Fail scenarios", () => {
                 expect(res.body.error).to.not.be.null;
 
                 // Get all teams
-                chai
-                  .request(app)
+                agent
                   .get("/api/team")
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -633,6 +626,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/PUT:id - try to update a team with no token", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -644,17 +638,16 @@ describe("Team workflow tests - Fail scenarios", () => {
         let teamId = res.body.data[1];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
             // Update a team
-            chai
-              .request(app)
+            agent
               .put("/api/team/" + teamId)
               .send(updatedTeam)
               .end((err, res) => {
@@ -663,8 +656,7 @@ describe("Team workflow tests - Fail scenarios", () => {
                 expect(res.body.error).to.not.be.null;
 
                 // Get team by id
-                chai
-                  .request(app)
+                agent
                   .get("/api/team/" + teamId)
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -866,6 +858,7 @@ describe("Team workflow tests - Fail scenarios", () => {
   // });
 
   it("/DELETE:id - should register + login a user, try to delete with no token", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -877,38 +870,35 @@ describe("Team workflow tests - Fail scenarios", () => {
         let teamId = res.body.data[1];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
-            chai
-              .request(app)
-              .delete("/api/team/" + teamId)
-              .end((err, res) => {
-                should().exist(res);
-                res.should.have.status(401);
-                expect(res.body.error).to.not.be.null;
+            agent.delete("/api/team/" + teamId).end((err, res) => {
+              should().exist(res);
+              res.should.have.status(401);
+              expect(res.body.error).to.not.be.null;
 
-                chai
-                  .request(app)
-                  .get("/api/team")
-                  .set("auth-token", token)
-                  .end((err, res) => {
-                    should().exist(res);
-                    res.should.have.status(200);
-                    res.body.should.be.a("array");
-                    res.body.length.should.be.eql(1);
-                    done();
-                  });
-              });
+              agent
+                .get("/api/team")
+                .set("auth-token", token)
+                .end((err, res) => {
+                  should().exist(res);
+                  res.should.have.status(200);
+                  res.body.should.be.a("array");
+                  res.body.length.should.be.eql(1);
+                  done();
+                });
+            });
           });
       });
   });
   it("/DELETE:id - should register + login a user, try to delete the user's only team", (done) => {
+    const agent = chai.request.agent(app);
     // Register user
     chai
       .request(app)
@@ -920,16 +910,15 @@ describe("Team workflow tests - Fail scenarios", () => {
         let teamId = res.body.data[1];
 
         // Login user
-        chai
-          .request(app)
+        agent
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
             expect(res.status).to.equal(200);
-            let token = res.body.data.token;
+            expect(res).to.have.cookie("jwt");
+            let token = res.body.accessToken;
 
-            chai
-              .request(app)
+            agent
               .delete("/api/team/" + teamId)
               .set({ "auth-token": token })
               .end((err, res) => {
@@ -942,8 +931,7 @@ describe("Team workflow tests - Fail scenarios", () => {
                     "Cannot delete your only team! A user needs to belong to atleast one"
                   );
 
-                chai
-                  .request(app)
+                agent
                   .get("/api/team")
                   .set("auth-token", token)
                   .end((err, res) => {
@@ -959,6 +947,8 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/DELETE:id - should register + login a user, try to delete another user's team", (done) => {
+    const agent = chai.request.agent(app);
+    const agent1 = chai.request.agent(app);
     // Register user 1
     chai
       .request(app)
@@ -967,6 +957,7 @@ describe("Team workflow tests - Fail scenarios", () => {
       .end((err, res) => {
         expect(res.status).to.equal(200);
         expect(res.body).to.be.a("object");
+
         // Register user 2
         chai
           .request(app)
@@ -978,16 +969,15 @@ describe("Team workflow tests - Fail scenarios", () => {
             let teamIdUser2 = res.body.data[1];
 
             // Login user
-            chai
-              .request(app)
+            agent
               .post("/api/auth/login")
               .send(userLogin)
               .end((err, res) => {
                 expect(res.status).to.equal(200);
-                let token = res.body.data.token;
+                expect(res).to.have.cookie("jwt");
+                let token = res.body.accessToken;
 
-                chai
-                  .request(app)
+                agent
                   .delete("/api/team/" + teamIdUser2)
                   .set({ "auth-token": token })
                   .end((err, res) => {
@@ -998,16 +988,15 @@ describe("Team workflow tests - Fail scenarios", () => {
                       .to.have.property("message")
                       .equal("Cannot delete a team created by another user");
 
-                    chai
-                      .request(app)
+                    agent1
                       .post("/api/auth/login")
                       .send(userLogin2)
                       .end((err, res) => {
                         expect(res.status).to.equal(200);
-                        let tokenUser2 = res.body.data.token;
+                        expect(res).to.have.cookie("jwt");
+                        let tokenUser2 = res.body.accessToken;
 
-                        chai
-                          .request(app)
+                        agent1
                           .get("/api/team")
                           .set("auth-token", tokenUser2)
                           .end((err, res) => {

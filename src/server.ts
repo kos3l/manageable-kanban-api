@@ -6,9 +6,11 @@ import bodyParser from "body-parser";
 import authRoutes from "./api/routes/AuthRoutes";
 import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
+import tokenRoutes from "./api/routes/TokenRoutes";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
+import cookieParser from "cookie-parser";
 
 const swaggerDefinition = yaml.load("./src/config/swagger.yaml");
 
@@ -17,15 +19,18 @@ const app: express.Application = express();
 // Use cors library
 app.use(
   cors({
-    origin: "*",
+    origin: ["http://localhost:4000/", "http://localhost:5173"],
     methods: ["GET", "POST", "DELETE", "UPDATE", "PUT"],
+    credentials: true,
   })
 );
 
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDefinition));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
+app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
 

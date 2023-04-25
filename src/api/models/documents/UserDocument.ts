@@ -10,6 +10,7 @@ export interface UserDocument {
   profilePicture?: string;
   bio?: string;
   teams: mongoose.Types.ObjectId[];
+  refreshToken?: string;
 }
 
 export interface UserMethods {

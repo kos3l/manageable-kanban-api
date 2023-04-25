@@ -63,7 +63,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",
-      //issues on local host it needs to be false for postman to work
+      //issues on local host it needs to be false for postman to work, shoold be false in dev
       secure: true,
       // one day
       maxAge: 24 * 60 * 60 * 1000,
@@ -74,9 +74,35 @@ const login = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const logout = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
+      return res.sendStatus(204);
+    }
+    const refreshToken = cookies.jwt;
+    const userWithThisRefreshToken = await userService.getUserByRefreshToken(
+      refreshToken
+    );
+    if (!userWithThisRefreshToken) {
+      res.clearCookie("jwt", { httpOnly: true, secure: true });
+      return res.sendStatus(204);
+    }
+
+    await userService.updateUser(userWithThisRefreshToken.id, {
+      refreshToken: "",
+    });
+    res.clearCookie("jwt", { httpOnly: true, secure: true });
+    return res.sendStatus(204);
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+};
+
 const authController = {
   register,
   login,
+  logout,
 };
 
 export default authController;

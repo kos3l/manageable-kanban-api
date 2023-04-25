@@ -10,7 +10,7 @@ const generateToken = async (
       id: id,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: "5000s" }
+    { expiresIn: "5m" }
   );
 
   const refreshToken = jwt.sign(

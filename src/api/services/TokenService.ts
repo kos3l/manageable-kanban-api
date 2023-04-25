@@ -25,8 +25,30 @@ const generateToken = async (
   const tokens = [accessToken, refreshToken];
   return tokens;
 };
+
+const generateNewAccesToken = async (
+  refreshToken: string,
+  userWithRefreshToken: string
+) => {
+  return jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    (err: any, decoded: any) => {
+      if (err || userWithRefreshToken !== decoded.id) {
+        throw new Error("WRONG");
+      }
+      const accessToken = jwt.sign(
+        { name: decoded.name, id: decoded.id },
+        process.env.TOKEN_SECRET,
+        { expiresIn: "10s" }
+      );
+      return accessToken;
+    }
+  );
+};
 const tokenService = {
   generateToken,
+  generateNewAccesToken,
 };
 
 export default tokenService;

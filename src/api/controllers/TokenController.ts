@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
+import tokenService from "../services/TokenService";
 import userService from "../services/UserService";
-const jwt = require("jsonwebtoken");
 
 const refreshToken = async (req: ExtendedRequest, res: Response) => {
   const cookies = req.cookies;
@@ -15,24 +15,18 @@ const refreshToken = async (req: ExtendedRequest, res: Response) => {
 
   if (!userWithThisRefreshToken) {
     return res.sendStatus(403);
-  } //Forbidden
+  }
 
-  // evaluate jwt
-  jwt.verify(
-    refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
-    (err: any, decoded: any) => {
-      if (err || userWithThisRefreshToken.id !== decoded.id) {
-        return res.sendStatus(403);
-      }
-      const accessToken = jwt.sign(
-        { name: decoded.name, id: decoded.id },
-        process.env.TOKEN_SECRET,
-        { expiresIn: "10s" }
-      );
-      res.json({ accessToken });
-    }
-  );
+  try {
+    const newAccessToken = await tokenService.generateNewAccesToken(
+      refreshToken,
+      userWithThisRefreshToken.id
+    );
+
+    res.json({ newAccessToken });
+  } catch (error: any) {
+    return res.sendStatus(403);
+  }
 };
 
 const authController = {

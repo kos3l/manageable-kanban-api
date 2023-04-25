@@ -6,7 +6,7 @@ import bodyParser from "body-parser";
 import authRoutes from "./api/routes/AuthRoutes";
 import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
-import refrshRoutes from "./api/routes/RefreshRoutes";
+import tokenRoutes from "./api/routes/TokenRoutes";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
@@ -30,7 +30,7 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
-app.use("/api/refresh", refrshRoutes);
+app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
 

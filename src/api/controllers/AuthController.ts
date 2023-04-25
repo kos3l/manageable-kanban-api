@@ -65,6 +65,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
       sameSite: "none",
       //issues on local host it needs to be false for postman to work
       secure: true,
+      // one day
       maxAge: 24 * 60 * 60 * 1000,
     });
     res.json({ accessToken });

@@ -64,10 +64,10 @@ const login = async (req: ExtendedRequest, res: Response) => {
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
-      sameSite: "strict",
+      sameSite: "none",
       //issues on local host it needs to be false for postman to work, shoold be false in dev
       secure: false,
-      // one day
+      // one true
       maxAge: 24 * 60 * 60 * 1000,
       domain: process.env.API_DOMAIN,
     });

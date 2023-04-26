@@ -19,7 +19,12 @@ const app: express.Application = express();
 // Use cors library
 app.use(
   cors({
-    origin: ["http://localhost:4000/", "http://localhost:5173"],
+    origin: [
+      "http://localhost:4000/",
+      "http://localhost:5173",
+      "https://manageable-dev-app.onrender.com",
+      "https://manageableapi.onrender.com",
+    ],
     methods: ["GET", "POST", "DELETE", "UPDATE", "PUT"],
     credentials: true,
   })

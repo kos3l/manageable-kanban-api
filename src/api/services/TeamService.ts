@@ -1,5 +1,3 @@
-import { timeStamp } from "console";
-import { Timestamp } from "mongodb";
 import mongoose from "mongoose";
 import { TeamDocument } from "../models/documents/TeamDocument";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
@@ -7,8 +5,6 @@ import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
 import { Team } from "../models/schemas/TeamSchema";
 import teamValidation from "../validations/TeamValidation";
 import userService from "./UserService";
-import { ApiError } from "../utils/ApiError";
-
 const httpStatus = require("http-status");
 
 const getAllTeams = async (userId: string) => {

@@ -61,7 +61,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
     });
 
     console.log(
-      process.env.EXTERNAL_HOSTNAME,
+      process.env.RENDER_EXTERNAL_URL,
       "cookie domain - auth controller"
     );
 
@@ -72,7 +72,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
       secure: true,
       // one day
       maxAge: 24 * 60 * 60 * 1000,
-      domain: process.env.EXTERNAL_HOSTNAME,
+      domain: process.env.RENDER_EXTERNAL_URL,
     });
     res.json({ accessToken });
   } catch (error) {

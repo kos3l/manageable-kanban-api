@@ -60,10 +60,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
       refreshToken: refreshToken,
     });
 
-    console.log(
-      process.env.RENDER_EXTERNAL_HOSTNAME,
-      "cookie domain - auth controller"
-    );
+    console.log(process.env.API_DOMAIN, "cookie domain - auth controller");
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
@@ -72,7 +69,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
       secure: false,
       // one day
       maxAge: 24 * 60 * 60 * 1000,
-      domain: process.env.RENDER_EXTERNAL_HOSTNAME,
+      domain: process.env.API_DOMAIN,
     });
     res.json({ accessToken });
   } catch (error) {

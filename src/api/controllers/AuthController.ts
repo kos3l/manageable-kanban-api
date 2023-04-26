@@ -59,7 +59,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
     userService.updateUser(loggedInUser.id, {
       refreshToken: refreshToken,
     });
-
+    console.log(process.env.RENDER_EXTERNAL_HOSTNAME);
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",

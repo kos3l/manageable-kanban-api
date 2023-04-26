@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:4000/api/
     description: Localhost development server
-  - url: https://manageableapi.onrender.com/api/
+  - url: https://manageable.onrender.com/api/
     description: Deployed production server
 components:
   securitySchemes:

@@ -22,8 +22,8 @@ app.use(
     origin: [
       "http://localhost:4000/",
       "http://localhost:5173",
-      "https://manageable-dev-app.onrender.com",
-      "https://manageableapi.onrender.com",
+      "https://manageable-app.onrender.com",
+      "https://manageable.onrender.com",
     ],
     methods: ["GET", "POST", "DELETE", "UPDATE", "PUT"],
     credentials: true,
@@ -38,6 +38,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
+
+console.log(process.env.DBHOST, "DBHOST - server");
 
 mongoose
   .connect(process.env.DBHOST!)

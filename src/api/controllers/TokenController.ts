@@ -5,7 +5,7 @@ import userService from "../services/UserService";
 
 const refreshToken = async (req: ExtendedRequest, res: Response) => {
   const cookies = req.cookies;
-  if (!cookies?.jwt) {
+  if (!cookies.jwt) {
     return res.sendStatus(401);
   }
   const refreshToken = cookies.jwt;

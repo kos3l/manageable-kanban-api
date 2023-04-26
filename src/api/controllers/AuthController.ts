@@ -61,18 +61,18 @@ const login = async (req: ExtendedRequest, res: Response) => {
     });
 
     console.log(
-      process.env.RENDER_EXTERNAL_URL,
+      process.env.RENDER_EXTERNAL_HOSTNAME,
       "cookie domain - auth controller"
     );
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
-      sameSite: "none",
+      sameSite: "strict",
       //issues on local host it needs to be false for postman to work, shoold be false in dev
-      secure: true,
+      secure: false,
       // one day
       maxAge: 24 * 60 * 60 * 1000,
-      domain: process.env.RENDER_EXTERNAL_URL,
+      domain: process.env.RENDER_EXTERNAL_HOSTNAME,
     });
     res.json({ accessToken });
   } catch (error) {
@@ -83,7 +83,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
 const logout = async (req: ExtendedRequest, res: Response) => {
   try {
     const cookies = req.cookies;
-    if (!cookies?.jwt) {
+    if (!cookies.jwt) {
       return res.sendStatus(204);
     }
     const refreshToken = cookies.jwt;

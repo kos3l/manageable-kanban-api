@@ -67,6 +67,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
       secure: true,
       // one day
       maxAge: 24 * 60 * 60 * 1000,
+      domain: process.env.RENDER_EXTERNAL_HOSTNAME,
     });
     res.json({ accessToken });
   } catch (error) {

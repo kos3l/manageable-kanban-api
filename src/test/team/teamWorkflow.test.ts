@@ -58,7 +58,6 @@ describe("Team workflow tests - Happy scenarios", () => {
           .post("/api/auth/login")
           .send(userLogin)
           .end((err, res) => {
-            console.log(res);
             expect(res).to.have.cookie("jwt");
             expect(res.status).to.equal(200);
             let token = res.body.accessToken;

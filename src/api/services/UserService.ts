@@ -28,6 +28,13 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
+const getUserByRefreshToken = async (refreshToken: string) => {
+  const user = await User.findOne({
+    refreshToken: refreshToken,
+  });
+  return user;
+};
+
 const updateUser = async (
   id: string,
   userDto: IUpdateUserDTO,
@@ -47,6 +54,7 @@ const userService = {
   getUserById,
   getUserByEmail,
   updateUser,
+  getUserByRefreshToken,
 };
 
 export default userService;

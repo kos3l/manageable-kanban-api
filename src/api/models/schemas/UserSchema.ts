@@ -51,6 +51,10 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
       required: true,
       default: [],
     },
+    refreshToken: {
+      type: String,
+      required: false,
+    },
   },
   { timestamps: true }
 );

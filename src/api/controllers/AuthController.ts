@@ -48,15 +48,52 @@ const login = async (req: ExtendedRequest, res: Response) => {
     const username: string =
       loggedInUser.firstName + " " + loggedInUser.lastName;
 
-    const token: string = await tokenService.generateToken(
+    const tokens: string[] = await tokenService.generateToken(
       username,
       loggedInUser.id
     );
 
-    return res.header("auth-token", token).json({
-      error: null,
-      data: { token },
+    const accessToken = tokens[0];
+    const refreshToken = tokens[1];
+
+    userService.updateUser(loggedInUser.id, {
+      refreshToken: refreshToken,
     });
+
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      //issues on local host it needs to be false for postman to work, shoold be false in dev
+      secure: true,
+      // one day
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    res.json({ accessToken });
+  } catch (error) {
+    return res.status(400).json(error);
+  }
+};
+
+const logout = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) {
+      return res.sendStatus(204);
+    }
+    const refreshToken = cookies.jwt;
+    const userWithThisRefreshToken = await userService.getUserByRefreshToken(
+      refreshToken
+    );
+    if (!userWithThisRefreshToken) {
+      res.clearCookie("jwt", { httpOnly: true, secure: true });
+      return res.sendStatus(204);
+    }
+
+    await userService.updateUser(userWithThisRefreshToken.id, {
+      refreshToken: "",
+    });
+    res.clearCookie("jwt", { httpOnly: true, secure: true });
+    return res.sendStatus(204);
   } catch (error) {
     return res.status(400).json(error);
   }
@@ -65,6 +102,7 @@ const login = async (req: ExtendedRequest, res: Response) => {
 const authController = {
   register,
   login,
+  logout,
 };
 
 export default authController;

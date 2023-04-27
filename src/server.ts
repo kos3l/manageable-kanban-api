@@ -22,9 +22,9 @@ app.use(
     origin: [
       "http://localhost:4000/",
       "http://localhost:5173",
-      "https://www.app.neon-dev.dk/",
-      "https://app.neon-dev.dk/",
-      "https://api.neon-dev.dk/",
+      "https://www.app.neon-dev.dk",
+      "https://app.neon-dev.dk",
+      "https://api.neon-dev.dk",
     ],
     methods: ["GET", "POST", "DELETE", "UPDATE", "PUT"],
     credentials: true,

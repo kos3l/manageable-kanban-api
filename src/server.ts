@@ -40,8 +40,6 @@ app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
 
-console.log(process.env.DBHOST, "DBHOST - server");
-
 mongoose
   .connect(process.env.DBHOST!)
   .catch((error) => console.log("Error connecting to MongoDb: " + error));

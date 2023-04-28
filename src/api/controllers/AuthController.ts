@@ -87,14 +87,22 @@ const logout = async (req: ExtendedRequest, res: Response) => {
       refreshToken
     );
     if (!userWithThisRefreshToken) {
-      res.clearCookie("jwt", { httpOnly: true, secure: true });
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: true,
+        domain: process.env.API_DOMAIN,
+      });
       return res.sendStatus(204);
     }
 
     await userService.updateUser(userWithThisRefreshToken.id, {
       refreshToken: "",
     });
-    res.clearCookie("jwt", { httpOnly: true, secure: true });
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: true,
+      domain: process.env.API_DOMAIN,
+    });
     return res.sendStatus(204);
   } catch (error) {
     return res.status(400).json(error);

@@ -10,7 +10,7 @@ const generateToken = async (
       id: id,
     },
     process.env.TOKEN_SECRET,
-    { expiresIn: "10s" }
+    { expiresIn: "10m" }
   );
 
   const refreshToken = jwt.sign(
@@ -67,7 +67,7 @@ const generateNewAccesToken = async (
       const accessToken = jwt.sign(
         { name: decoded.name, id: decoded.id },
         process.env.TOKEN_SECRET,
-        { expiresIn: "10s" }
+        { expiresIn: "10m" }
       );
       return accessToken;
     }

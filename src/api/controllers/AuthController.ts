@@ -60,8 +60,6 @@ const login = async (req: ExtendedRequest, res: Response) => {
       refreshToken: refreshToken,
     });
 
-    console.log(process.env.API_DOMAIN, "cookie domain - auth controller");
-
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",

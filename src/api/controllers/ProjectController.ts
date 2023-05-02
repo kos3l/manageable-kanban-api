@@ -1,5 +1,7 @@
 import { Response } from "express";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
+import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import columnsService from "../services/ColumnService";
 import projectService from "../services/ProjectService";
@@ -72,10 +74,51 @@ const createNewProject = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const updateOneProject = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const teamId = req.params.teamId;
+  const data: IUpdateProjectDTO = req.body;
+
+  const userId = req.user;
+  if (!userId) {
+    return res.status(401).send({ message: "Unauthorised" });
+  }
+
+  const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
+  if (isUserInTheTeam == null) {
+    return res.status(401).send({
+      message: "Can't preview projects of a team the user does not belong to",
+    });
+  }
+
+  try {
+    const updatedProject = await projectService.updateOneProject(
+      projectId,
+      data
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Project was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const projectController = {
   getAllProjects,
-  createNewProject,
   getProjectById,
+  createNewProject,
+  updateOneProject,
 };
 
 export default projectController;

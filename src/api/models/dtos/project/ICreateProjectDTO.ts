@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { ColumnDocument } from "../../documents/ColumnDocument";
 
 export interface ICreateProjectDTO {

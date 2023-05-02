@@ -9,6 +9,11 @@ const getAllProjects = async (teamId: string) => {
   return allProjects;
 };
 
+const getProjectById = async (projectId: string) => {
+  const project = await Project.find({ _id: projectId });
+  return project;
+};
+
 const createNewProject = async (
   projectDto: ICreateProjectDTO,
   session?: mongoose.mongo.ClientSession
@@ -31,6 +36,7 @@ const createNewProject = async (
 const projectService = {
   createNewProject,
   getAllProjects,
+  getProjectById,
 };
 
 export default projectService;

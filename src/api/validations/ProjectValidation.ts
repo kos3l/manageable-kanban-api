@@ -1,5 +1,4 @@
 import Joi from "joi";
-import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 
@@ -10,7 +9,7 @@ const createProjectValidation = (data: ICreateProjectDTO) => {
     techStack: Joi.array<string>().required(),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),
-    teamId: Joi.object<mongoose.Types.ObjectId>().required(),
+    teamId: Joi.string().required(),
     columns: Joi.array<ColumnDocument>().required(),
   });
   return schema.validate(data);

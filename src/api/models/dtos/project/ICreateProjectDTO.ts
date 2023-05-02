@@ -7,6 +7,6 @@ export interface ICreateProjectDTO {
   techStack: string[];
   startDate: Date;
   endDate: Date;
-  teamId: mongoose.Types.ObjectId;
+  teamId: string;
   columns: ColumnDocument[];
 }

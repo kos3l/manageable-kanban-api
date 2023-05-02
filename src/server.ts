@@ -7,6 +7,7 @@ import authRoutes from "./api/routes/AuthRoutes";
 import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
 import tokenRoutes from "./api/routes/TokenRoutes";
+import projectRoutes from "./api/routes/ProjectRoutes";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
@@ -39,6 +40,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
+app.use("/api/project", verifyToken, projectRoutes);
 
 mongoose
   .connect(process.env.DBHOST!)

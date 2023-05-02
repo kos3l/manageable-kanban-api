@@ -43,6 +43,6 @@ let taskSchema = new Schema<TaskDocument>(
   },
   { timestamps: true }
 );
-const Task = model<TaskDocument>("team", taskSchema);
+const Task = model<TaskDocument>("task", taskSchema);
 
 export { taskSchema, Task };

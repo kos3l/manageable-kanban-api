@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
-export interface ColumnDocument {
-  id: mongoose.Types.ObjectId;
+export interface IUpdateColumnDTO {
+  id: string;
   name: string;
-  order: number;
   tasks: mongoose.Types.ObjectId[];
+  order: number;
 }

@@ -65,11 +65,6 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
   await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
 
   try {
-    const { error } = projectValidation.updateProjectValidation(data);
-    if (error) {
-      return res.status(500).send({ message: error.details[0].message });
-    }
-
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data
@@ -99,14 +94,30 @@ const updateProjectColumns = async (req: ExtendedRequest, res: Response) => {
   const data: IUpdateProjectDTO = req.body;
 
   await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+  const projectBeforeChanges = await projectService.getProjectById(projectId);
+
+  const newColumns = data.columns?.filter((col) =>
+    projectBeforeChanges[0].columns.find(
+      (fetchedCols) => !fetchedCols.id.equals(col.id)
+    )
+  );
+
+  const deletedColumns = projectBeforeChanges[0].columns.filter((col) =>
+    data.columns?.find((fetchedCols) => !col.id.equals(fetchedCols.id))
+  );
+
+  const colsToUpdateProperties = projectBeforeChanges[0].columns.filter((col) =>
+    data.columns?.find((fetchedCols) => col.id.equals(fetchedCols.id))
+  );
+
+  if (newColumns) {
+    newColumns.forEach((col) => {
+      projectBeforeChanges[0].columns.push(col);
+    });
+  }
 
   try {
-    const { error } = projectValidation.updateProjectColumns(data);
-    if (error) {
-      return res.status(500).send({ message: error.details[0].message });
-    }
-
-    const updatedProject = await projectService.updateOneProject(
+    const updatedProject = await projectService.updateProjectColumns(
       projectId,
       data
     );

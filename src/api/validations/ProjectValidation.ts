@@ -1,6 +1,8 @@
 import Joi from "joi";
+import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 
 const createProjectValidation = (data: ICreateProjectDTO) => {
@@ -29,7 +31,16 @@ const updateProjectValidation = (data: IUpdateProjectDTO) => {
 
 const updateProjectColumns = (data: IUpdateProjectDTO) => {
   const schema = Joi.object({
-    columns: Joi.array<ColumnDocument>().required(),
+    columns: Joi.array<IUpdateColumnDTO>()
+      .items(
+        Joi.object({
+          id: Joi.object<mongoose.Types.ObjectId>().required(),
+          name: Joi.string().min(2).max(255).required(),
+          tasks: Joi.array<mongoose.Types.ObjectId>().required(),
+          order: Joi.number().required(),
+        })
+      )
+      .required(),
   });
   return schema.validate(data);
 };

@@ -1,4 +1,4 @@
-import { ColumnDocument } from "../../documents/ColumnDocument";
+import { IUpdateColumnDTO } from "./IUpdateColumnsDTO";
 
 export interface IUpdateProjectDTO {
   name?: string;
@@ -6,5 +6,5 @@ export interface IUpdateProjectDTO {
   techStack?: string[];
   startDate?: Date;
   endDate?: Date;
-  columns?: ColumnDocument[];
+  columns?: IUpdateColumnDTO[];
 }

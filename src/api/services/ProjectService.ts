@@ -39,9 +39,36 @@ const updateOneProject = async (
   projectDto: IUpdateProjectDTO,
   session?: mongoose.mongo.ClientSession
 ) => {
+  const { error } = projectValidation.updateProjectValidation(projectDto);
+  if (error) {
+    throw Error(error.details[0].message);
+  }
+
   if (session) {
     const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
       session,
+    });
+    return updatedProject;
+  } else {
+    const updatedProject = await Project.findByIdAndUpdate(id, projectDto);
+    return updatedProject;
+  }
+};
+
+const updateProjectColumns = async (
+  id: string,
+  projectDto: IUpdateProjectDTO,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const { error } = projectValidation.updateProjectColumns(projectDto);
+  if (error) {
+    throw Error(error.details[0].message);
+  }
+
+  if (session) {
+    const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
+      session,
+      $set: {},
     });
     return updatedProject;
   } else {
@@ -70,6 +97,7 @@ const projectService = {
   getAllProjects,
   getProjectById,
   updateOneProject,
+  updateProjectColumns,
   verifyIfUserCanAccessTheProject,
 };
 

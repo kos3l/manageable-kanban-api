@@ -7,11 +7,12 @@ const createNewEmptyColumns = (columnNames: string[]) => {
       "Cannot create new Columns when there are no column names provided!"
     );
   }
-  const columnsArray: ColumnDocument[] = columnNames.map((colName) => {
+  const columnsArray: ColumnDocument[] = columnNames.map((colName, index) => {
     const newCol = {
       id: new mongoose.Types.ObjectId(),
       name: colName,
       tasks: [],
+      order: index,
     };
     return newCol;
   });

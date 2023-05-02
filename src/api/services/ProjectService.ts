@@ -3,7 +3,7 @@ import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
-const httpStatus = require("http-status");
+import teamService from "./TeamService";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -39,12 +39,6 @@ const updateOneProject = async (
   projectDto: IUpdateProjectDTO,
   session?: mongoose.mongo.ClientSession
 ) => {
-  const { error } = projectValidation.updateProjectValidation(projectDto);
-  if (error) {
-    // fix this to actually work the status code
-    throw new Error(error.details[0].message);
-  }
-
   if (session) {
     const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
       session,
@@ -56,11 +50,27 @@ const updateOneProject = async (
   }
 };
 
+const verifyIfUserCanAccessTheProject = async (
+  userId: string | undefined,
+  teamId: string
+) => {
+  if (!userId) {
+    throw new Error("Unauthorised");
+  }
+  const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
+  if (isUserInTheTeam == null) {
+    throw new Error(
+      "Can't preview projects of a team the user does not belong to"
+    );
+  }
+};
+
 const projectService = {
   createNewProject,
   getAllProjects,
   getProjectById,
   updateOneProject,
+  verifyIfUserCanAccessTheProject,
 };
 
 export default projectService;

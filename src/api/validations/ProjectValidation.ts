@@ -27,8 +27,16 @@ const updateProjectValidation = (data: IUpdateProjectDTO) => {
   return schema.validate(data);
 };
 
+const updateProjectColumns = (data: IUpdateProjectDTO) => {
+  const schema = Joi.object({
+    columns: Joi.array<ColumnDocument>().required(),
+  });
+  return schema.validate(data);
+};
+
 const projectValidation = {
   createProjectValidation,
   updateProjectValidation,
+  updateProjectColumns,
 };
 export default projectValidation;

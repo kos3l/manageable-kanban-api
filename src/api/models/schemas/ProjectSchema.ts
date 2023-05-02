@@ -50,4 +50,4 @@ let projectSchema = new Schema<ProjectDocument>(
   { timestamps: true }
 );
 
-export const Project = model<TeamDocument>("project", projectSchema);
+export const Project = model<ProjectDocument>("project", projectSchema);

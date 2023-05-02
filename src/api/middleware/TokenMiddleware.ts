@@ -10,13 +10,6 @@ export const verifyToken = (
   const token = req.header("auth-token");
   if (!token) return res.status(401).json({ error: "No token found" });
 
-  console.log(token, "sent access token - token middleware");
-
-  console.log(
-    process.env.TOKEN_SECRET,
-    "access token secret - token middleware"
-  );
-
   try {
     const verified = jwt.verify(token, process.env.TOKEN_SECRET);
     req.user = verified.id;

@@ -3,7 +3,6 @@ import httpStatus from "http-status";
 import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import userService from "../services/UserService";
-import { ApiError } from "../utils/ApiError";
 import userValidation from "../validations/UserValidation";
 
 const getUserById = async (req: ExtendedRequest, res: Response) => {
@@ -13,6 +12,21 @@ const getUserById = async (req: ExtendedRequest, res: Response) => {
       return res.status(401).send({ message: "Unauthorised" });
     }
     const user = await userService.getUserById(userId);
+
+    return res.json(user);
+  } catch (error: any) {
+    return res.status(500).json(error);
+  }
+};
+
+const getLoggedInUserProfile = async (req: ExtendedRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).send({ message: "Unauthorised" });
+    }
+    const id = req.user;
+
+    const user = await userService.getUserById(id);
 
     return res.json(user);
   } catch (error: any) {
@@ -55,6 +69,7 @@ const userController = {
   getUserById,
   getUserByEmail,
   updateOneUser,
+  getLoggedInUserProfile,
 };
 
 export default userController;

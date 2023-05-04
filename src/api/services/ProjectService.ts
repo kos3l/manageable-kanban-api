@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
+import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
@@ -124,6 +125,24 @@ const updateOneColumnOrder = async (
   return updatedProject;
 };
 
+const updateColumn = async (
+  projectId: string,
+  updatedColumn: IUpdateColumnDTO
+) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": updatedColumn.id,
+    },
+    {
+      $set: {
+        "columns.$.name": updatedColumn.name,
+      },
+    }
+  );
+  return updatedProject;
+};
+
 const verifyIfUserCanAccessTheProject = async (
   userId: string | undefined,
   teamId: string
@@ -149,6 +168,7 @@ const projectService = {
   updateProjectColumns,
   updateOneColumnOrder,
   verifyIfUserCanAccessTheProject,
+  updateColumn,
 };
 
 export default projectService;

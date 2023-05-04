@@ -32,10 +32,7 @@ router.put(
   projectController.changeColumnOrderOnProject
 );
 
-// // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
-// router.put(
-//   "/column/:projectId/team/:teamId",
-//   projectController.addNewColumnToProject
-// );
+// // route: /api/project/:projectId/column/team/:teamId/
+router.put("/:projectId/column/team/:teamId", projectController.updateColumn);
 
 export = router;

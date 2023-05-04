@@ -10,6 +10,7 @@ import projectService from "../services/ProjectService";
 import { conn } from "../../server";
 import teamService from "../services/TeamService";
 import { use } from "chai";
+import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -242,9 +243,39 @@ const changeColumnOrderOnProject = async (
   }
 };
 
-// ADD: update column name
+const updateColumn = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const teamId = req.params.teamId;
+  const userId = req.user;
+  const updatedColumn: IUpdateColumnDTO = req.body;
+
+  try {
+    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const updatedProject = await projectService.updateColumn(
+      projectId,
+      updatedColumn
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Column Order was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 // ADD: delete project
 // Implement status change
+// add all important validations
 
 const projectController = {
   getAllProjects,
@@ -254,6 +285,7 @@ const projectController = {
   addNewColumnToProject,
   deleteColumnFromProject,
   changeColumnOrderOnProject,
+  updateColumn,
 };
 
 export default projectController;

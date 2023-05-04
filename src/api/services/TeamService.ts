@@ -80,7 +80,7 @@ const softDeleteOneTeam = async (id: string) => {
   return deletedTeam;
 };
 
-const removeMemembersFromATeam = async (
+const removeTeamFromUser = async (
   removedUsers: string[],
   updatedTeam: TeamDocument,
   session: mongoose.mongo.ClientSession
@@ -93,6 +93,7 @@ const removeMemembersFromATeam = async (
     throw Error("Can't remove the team creator!");
   }
 
+  //update to be done thoguth update many
   for (const id of removedUsers) {
     const user = await userService.getUserById(id);
     if (user && user.teams.length > 1) {
@@ -111,11 +112,12 @@ const removeMemembersFromATeam = async (
   }
 };
 
-const addMemembersToATeam = async (
+const addTeamToUser = async (
   addedUsers: string[],
   teamId: string,
   session: mongoose.mongo.ClientSession
 ) => {
+  //update to be done thoguth update many
   for (const id of addedUsers) {
     const user = await userService.getUserById(id);
     if (user && !user.teams.find((team) => team.equals(teamId))) {
@@ -141,8 +143,8 @@ const teamService = {
   createNewTeam,
   updateOneTeam,
   softDeleteOneTeam,
-  removeMemembersFromATeam,
-  addMemembersToATeam,
+  removeTeamFromUser,
+  addTeamToUser,
 };
 
 export default teamService;

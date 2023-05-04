@@ -33,7 +33,7 @@ const updateProjectValidation = (data: IUpdateProjectDTO) => {
 const updateProjectColumns = (data: IUpdateColumnOrderDTO) => {
   const schema = Joi.object({
     columnId: Joi.string().required(),
-    order: Joi.number().min(0).max(98).required(),
+    order: Joi.number().min(0).max(300).required(),
   });
   return schema.validate(data);
 };

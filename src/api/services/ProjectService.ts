@@ -75,30 +75,10 @@ const updateOneColumnOrder = async (
   if (error) {
     throw Error(error.details[0].message);
   }
+  // make this into transaction
+  // test more
 
-  const updatedProject = await Project.updateOne(
-    {
-      _id: projectId,
-      "columns._id": updatedColumn.columnId,
-    },
-    {
-      $set: {
-        "columns.$.order": updatedColumn.order,
-      },
-    }
-  );
-  return updatedProject;
-};
-
-const updateManyColumnOrder = async (
-  projectId: string,
-  updatedColumn: IUpdateColumnOrderDTO
-) => {
-  const { error } = projectValidation.updateProjectColumns(updatedColumn);
-  if (error) {
-    throw Error(error.details[0].message);
-  }
-
+  // Update all columns with order number greater or equal to the order value from body and increment by 1
   await Project.updateOne(
     {
       _id: projectId,
@@ -112,7 +92,8 @@ const updateManyColumnOrder = async (
     }
   );
 
-  const sortedProject = await Project.updateOne(
+  // Sort the array of columns on the project
+  await Project.updateOne(
     {
       _id: projectId,
     },
@@ -125,7 +106,20 @@ const updateManyColumnOrder = async (
       },
     }
   );
-  return sortedProject;
+
+  // Update the column from the body payload and change the order value to the new one
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": updatedColumn.columnId,
+    },
+    {
+      $set: {
+        "columns.$.order": updatedColumn.order,
+      },
+    }
+  );
+  return updatedProject;
 };
 
 const verifyIfUserCanAccessTheProject = async (
@@ -150,7 +144,6 @@ const projectService = {
   updateOneProject,
   updateProjectColumns,
   updateOneColumnOrder,
-  updateManyColumnOrder,
   verifyIfUserCanAccessTheProject,
 };
 

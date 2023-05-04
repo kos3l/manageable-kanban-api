@@ -126,7 +126,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
     if (removedUsers && removedUsers.length > 0) {
-      await teamService.removeMemembersFromATeam(
+      await teamService.removeTeamFromUser(
         removedUsers.map((user) => user.toString()),
         teamUpdateQueryResult,
         session
@@ -137,7 +137,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );
     if (addedUsers && addedUsers.length > 0) {
-      await teamService.addMemembersToATeam(addedUsers, teamId, session);
+      await teamService.addTeamToUser(addedUsers, teamId, session);
     }
 
     await session.commitTransaction();

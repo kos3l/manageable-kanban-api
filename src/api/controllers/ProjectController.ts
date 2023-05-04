@@ -7,7 +7,9 @@ import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import columnsService from "../services/ColumnService";
 import projectService from "../services/ProjectService";
-import projectValidation from "../validations/ProjectValidation";
+import { conn } from "../../server";
+import teamService from "../services/TeamService";
+import { use } from "chai";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -40,6 +42,7 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
   const newProject = req.body;
+  const userId = req.user!;
 
   const defaultColumns = ["Backlog", "To Do", "Doing", "Done"];
   const newColumnsArray = columnsService.createNewEmptyColumns(defaultColumns);
@@ -48,12 +51,46 @@ const createNewProject = async (req: ExtendedRequest, res: Response) => {
     ...newProject,
     columns: newColumnsArray,
   };
-
+  const session = await conn.startSession();
   try {
-    const allProjects = await projectService.createNewProject(newProjectDTO);
-    return res.send(allProjects);
+    session.startTransaction();
+
+    const newProject = await projectService.createNewProject(
+      newProjectDTO,
+      session
+    );
+    const teamToBeUpdated = await teamService.getTeamById(
+      userId,
+      newProjectDTO.teamId
+    );
+
+    if (!teamToBeUpdated || !teamToBeUpdated.projects) {
+      await session.abortTransaction();
+      return res
+        .status(500)
+        .send({ message: "Can't add the project to this team" });
+    }
+
+    const newProjectsArray: string[] =
+      teamToBeUpdated.projects.length > 0
+        ? [...teamToBeUpdated.projects, newProject.id]
+        : [newProject.id];
+
+    await teamService.updateOneTeam(
+      newProjectDTO.teamId,
+      {
+        projects: newProjectsArray,
+      },
+      session
+    );
+
+    await session.commitTransaction();
+    return res.send(newProject);
   } catch (error: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: error.message });
+  } finally {
+    session.endSession();
   }
 };
 
@@ -175,11 +212,7 @@ const changeColumnOrderOnProject = async (
   const updatedColumn: IUpdateColumnOrderDTO = req.body;
 
   try {
-    // first get all columns with order equal or bigger than new order prop and invrement with 1
-    // then update the correct columns order to be the new value
-
     await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
-    await projectService.updateManyColumnOrder(projectId, updatedColumn);
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn
@@ -202,50 +235,8 @@ const changeColumnOrderOnProject = async (
   }
 };
 
-// const updateProjectColumns = async (req: ExtendedRequest, res: Response) => {
-//   const projectId = req.params.projectId;
-//   const teamId = req.params.teamId;
-//   const userId = req.user;
-//   const data: IUpdateProjectDTO = req.body;
-
-//   await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
-//   const projectBeforeChanges = await projectService.getProjectById(projectId);
-
-//   const newColumns = data.columns?.filter((col) =>
-//     projectBeforeChanges[0].columns.find(
-//       (fetchedCols) => !fetchedCols.id.equals(col.id)
-//     )
-//   );
-
-//   const deletedColumns = projectBeforeChanges[0].columns.filter((col) =>
-//     data.columns?.find((fetchedCols) => !col.id.equals(fetchedCols.id))
-//   );
-
-//   const colsToUpdateProperties = projectBeforeChanges[0].columns.filter((col) =>
-//     data.columns?.find((fetchedCols) => col.id.equals(fetchedCols.id))
-//   );
-
-//   try {
-//     // const updatedProject = await projectService.updateProjectColumns(
-//     //   projectId,
-//     //   data
-//     // );
-//     // if (!updatedProject) {
-//     //   return res.status(404).send({
-//     //     message:
-//     //       "Cannot update project with id=" +
-//     //       projectId +
-//     //       ". Project was not found",
-//     //   });
-//     // } else {
-//     //   return res
-//     //     .status(201)
-//     //     .send({ message: "Project was succesfully updated." });
-//     // }
-//   } catch (err: any) {
-//     return res.status(500).send({ message: err.message });
-//   }
-// };
+// ADD: update column name
+// ADD: delete project
 
 const projectController = {
   getAllProjects,

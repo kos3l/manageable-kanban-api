@@ -16,15 +16,15 @@ router.put("/:projectId/team/:teamId", projectController.updateOneProject);
 
 // route: /api/project/AddColumns/:projectId/team/:teamId/
 router.put(
-  "/AddColumns/:projectId/team/:teamId",
+  "/:projectId/AddColumn/team/:teamId",
   projectController.addNewColumnToProject
 );
 
-// // route: /api/project/DeleteColumns/:projectId/team/:teamId/
-// router.put(
-//   "/DeleteColumns/:projectId/team/:teamId",
-//   projectController.addNewColumnToProject
-// );
+// route: /api/project/DeleteColumns/:projectId/team/:teamId/
+router.put(
+  "/:projectId/DeleteColumn/:columnId/team/:teamId",
+  projectController.deleteColumnFromProject
+);
 
 // // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
 // router.put(

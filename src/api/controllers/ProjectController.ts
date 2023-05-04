@@ -127,6 +127,42 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const teamId = req.params.teamId;
+  const userId = req.user;
+  const columnId = req.params.columnId;
+
+  try {
+    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const oneProject = await projectService.getProjectById(projectId);
+    const currentColumnsArray = oneProject[0].columns;
+    const newColumnsArray = currentColumnsArray.filter(
+      (col) => !col._id.equals(columnId)
+    );
+
+    const updatedProject = await projectService.updateProjectColumns(
+      projectId,
+      newColumnsArray
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Project was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 // const updateProjectColumns = async (req: ExtendedRequest, res: Response) => {
 //   const projectId = req.params.projectId;
 //   const teamId = req.params.teamId;
@@ -178,6 +214,7 @@ const projectController = {
   createNewProject,
   updateOneProject,
   addNewColumnToProject,
+  deleteColumnFromProject,
 };
 
 export default projectController;

@@ -9,7 +9,7 @@ const createNewEmptyColumns = (columnNames: string[]) => {
   }
   const columnsArray: ColumnDocument[] = columnNames.map((colName, index) => {
     const newCol = {
-      id: new mongoose.Types.ObjectId(),
+      _id: new mongoose.Types.ObjectId(),
       name: colName,
       tasks: [],
       order: index,
@@ -26,7 +26,7 @@ const createNewColumn = (columnName: string, order: number) => {
     );
   }
   const columnsArray: ColumnDocument = {
-    id: new mongoose.Types.ObjectId(),
+    _id: new mongoose.Types.ObjectId(),
     name: columnName,
     tasks: [],
     order: order,

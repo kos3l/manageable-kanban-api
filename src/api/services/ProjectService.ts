@@ -69,14 +69,13 @@ const updateProjectColumns = async (
 
 const updateOneColumnOrder = async (
   projectId: string,
-  updatedColumn: IUpdateColumnOrderDTO
+  updatedColumn: IUpdateColumnOrderDTO,
+  session: mongoose.mongo.ClientSession
 ) => {
   const { error } = projectValidation.updateProjectColumns(updatedColumn);
   if (error) {
     throw Error(error.details[0].message);
   }
-  // make this into transaction
-  // test more
 
   // Update all columns with order number greater or equal to the order value from body and increment by 1
   await Project.updateOne(
@@ -89,6 +88,7 @@ const updateOneColumnOrder = async (
     {
       multi: true,
       arrayFilters: [{ "elem1.order": { $gte: updatedColumn.order } }],
+      session: session,
     }
   );
 
@@ -104,7 +104,8 @@ const updateOneColumnOrder = async (
           $sort: { order: 1 },
         },
       },
-    }
+    },
+    { session: session }
   );
 
   // Update the column from the body payload and change the order value to the new one
@@ -117,7 +118,8 @@ const updateOneColumnOrder = async (
       $set: {
         "columns.$.order": updatedColumn.order,
       },
-    }
+    },
+    { session: session }
   );
   return updatedProject;
 };
@@ -129,6 +131,8 @@ const verifyIfUserCanAccessTheProject = async (
   if (!userId) {
     throw new Error("Unauthorised");
   }
+  // this kinda makes no sense because i can send as param any kind of teamid the user belongs to even if its unrelated to the project
+  // think about this
   const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
   if (isUserInTheTeam == null) {
     throw new Error(

@@ -211,13 +211,17 @@ const changeColumnOrderOnProject = async (
   const userId = req.user;
   const updatedColumn: IUpdateColumnOrderDTO = req.body;
 
+  const session = await conn.startSession();
   try {
+    session.startTransaction();
     await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
-      updatedColumn
+      updatedColumn,
+      session
     );
 
+    await session.commitTransaction();
     if (!updatedProject) {
       return res.status(404).send({
         message:
@@ -231,12 +235,16 @@ const changeColumnOrderOnProject = async (
         .send({ message: "Column Order was succesfully updated." });
     }
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 
 // ADD: update column name
 // ADD: delete project
+// Implement status change
 
 const projectController = {
   getAllProjects,

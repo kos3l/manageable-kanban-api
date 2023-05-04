@@ -2,6 +2,7 @@ import { Response } from "express";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateColumnDTO } from "../models/dtos/project/ICreateColumnDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import columnsService from "../services/ColumnService";
@@ -118,9 +119,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
           ". Project was not found",
       });
     } else {
-      return res
-        .status(201)
-        .send({ message: "Project was succesfully updated." });
+      return res.status(201).send({ message: "Column was succesfully added." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -156,7 +155,41 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
     } else {
       return res
         .status(201)
-        .send({ message: "Project was succesfully updated." });
+        .send({ message: "Column was succesfully deleted." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+const changeColumnOrderOnProject = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
+  const projectId = req.params.projectId;
+  const teamId = req.params.teamId;
+  const userId = req.user;
+  const updatedColumn: IUpdateColumnOrderDTO = req.body;
+
+  try {
+    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+
+    const updatedProject = await projectService.updateProjectColumnsOrder(
+      projectId,
+      updatedColumn
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Column Order was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -215,6 +248,7 @@ const projectController = {
   updateOneProject,
   addNewColumnToProject,
   deleteColumnFromProject,
+  changeColumnOrderOnProject,
 };
 
 export default projectController;

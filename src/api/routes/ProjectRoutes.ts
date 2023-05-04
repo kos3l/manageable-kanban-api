@@ -26,11 +26,11 @@ router.put(
   projectController.deleteColumnFromProject
 );
 
-// // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
-// router.put(
-//   "/ChangeColumnOrder/:projectId/team/:teamId",
-//   projectController.addNewColumnToProject
-// );
+// route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
+router.put(
+  "/:projectId/ChangeColumnOrder/team/:teamId",
+  projectController.changeColumnOrderOnProject
+);
 
 // // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
 // router.put(

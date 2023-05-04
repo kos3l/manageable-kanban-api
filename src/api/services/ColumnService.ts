@@ -19,8 +19,24 @@ const createNewEmptyColumns = (columnNames: string[]) => {
   return columnsArray;
 };
 
+const createNewColumn = (columnName: string, order: number) => {
+  if (!columnName || order == undefined || order == null) {
+    throw Error(
+      "Cannot create new Columns when there are no column names provided!"
+    );
+  }
+  const columnsArray: ColumnDocument = {
+    id: new mongoose.Types.ObjectId(),
+    name: columnName,
+    tasks: [],
+    order: order,
+  };
+  return columnsArray;
+};
+
 const columnsService = {
   createNewEmptyColumns,
+  createNewColumn,
 };
 
 export default columnsService;

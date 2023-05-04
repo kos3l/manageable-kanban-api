@@ -14,10 +14,28 @@ router.post("/", projectController.createNewProject);
 // route: /api/project/:projectId/team/:teamId
 router.put("/:projectId/team/:teamId", projectController.updateOneProject);
 
-// route: /api/project/columns/:projectId/team/:teamId
+// route: /api/project/AddColumns/:projectId/team/:teamId/
 router.put(
-  "/columns/:projectId/team/:teamId",
-  projectController.updateProjectColumns
+  "/AddColumns/:projectId/team/:teamId",
+  projectController.addNewColumnToProject
 );
+
+// // route: /api/project/DeleteColumns/:projectId/team/:teamId/
+// router.put(
+//   "/DeleteColumns/:projectId/team/:teamId",
+//   projectController.addNewColumnToProject
+// );
+
+// // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
+// router.put(
+//   "/ChangeColumnOrder/:projectId/team/:teamId",
+//   projectController.addNewColumnToProject
+// );
+
+// // route: /api/project/ChangeColumnOrder/:projectId/team/:teamId/
+// router.put(
+//   "/column/:projectId/team/:teamId",
+//   projectController.addNewColumnToProject
+// );
 
 export = router;

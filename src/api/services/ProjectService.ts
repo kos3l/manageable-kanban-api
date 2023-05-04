@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
@@ -56,25 +57,13 @@ const updateOneProject = async (
 };
 
 const updateProjectColumns = async (
-  id: string,
-  projectDto: IUpdateProjectDTO,
-  session?: mongoose.mongo.ClientSession
+  projectId: string,
+  newColumns: ColumnDocument[]
 ) => {
-  const { error } = projectValidation.updateProjectColumns(projectDto);
-  if (error) {
-    throw Error(error.details[0].message);
-  }
-
-  if (session) {
-    const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
-      session,
-      $set: {},
-    });
-    return updatedProject;
-  } else {
-    const updatedProject = await Project.findByIdAndUpdate(id, projectDto);
-    return updatedProject;
-  }
+  const updatedProject = await Project.findByIdAndUpdate(projectId, {
+    columns: newColumns,
+  });
+  return updatedProject;
 };
 
 const verifyIfUserCanAccessTheProject = async (

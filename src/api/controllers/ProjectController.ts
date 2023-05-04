@@ -97,6 +97,9 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
     await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
     const oneProject = await projectService.getProjectById(projectId);
     const currentColumnsArray = oneProject[0].columns;
+    if (currentColumnsArray.length == 98) {
+      return res.status(500).send({ message: "Can't add more columns!" });
+    }
     const biggestOrderNumber = currentColumnsArray
       .sort((col1, col2) => col1.order - col2.order)
       .reverse()[0].order;
@@ -172,9 +175,12 @@ const changeColumnOrderOnProject = async (
   const updatedColumn: IUpdateColumnOrderDTO = req.body;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    // first get all columns with order equal or bigger than new order prop and invrement with 1
+    // then update the correct columns order to be the new value
 
-    const updatedProject = await projectService.updateProjectColumnsOrder(
+    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    await projectService.updateManyColumnOrder(projectId, updatedColumn);
+    const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn
     );

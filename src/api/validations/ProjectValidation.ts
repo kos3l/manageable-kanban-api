@@ -2,6 +2,7 @@ import Joi from "joi";
 import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 
@@ -29,18 +30,10 @@ const updateProjectValidation = (data: IUpdateProjectDTO) => {
   return schema.validate(data);
 };
 
-const updateProjectColumns = (data: IUpdateProjectDTO) => {
+const updateProjectColumns = (data: IUpdateColumnOrderDTO) => {
   const schema = Joi.object({
-    columns: Joi.array<IUpdateColumnDTO>()
-      .items(
-        Joi.object({
-          id: Joi.object<mongoose.Types.ObjectId>().required(),
-          name: Joi.string().min(2).max(255).required(),
-          tasks: Joi.array<mongoose.Types.ObjectId>().required(),
-          order: Joi.number().required(),
-        })
-      )
-      .required(),
+    columnId: Joi.string().required(),
+    order: Joi.number().min(0).max(98).required(),
   });
   return schema.validate(data);
 };

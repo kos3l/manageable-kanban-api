@@ -67,10 +67,15 @@ const updateProjectColumns = async (
   return updatedProject;
 };
 
-const updateProjectColumnsOrder = async (
+const updateOneColumnOrder = async (
   projectId: string,
   updatedColumn: IUpdateColumnOrderDTO
 ) => {
+  const { error } = projectValidation.updateProjectColumns(updatedColumn);
+  if (error) {
+    throw Error(error.details[0].message);
+  }
+
   const updatedProject = await Project.updateOne(
     {
       _id: projectId,
@@ -83,6 +88,44 @@ const updateProjectColumnsOrder = async (
     }
   );
   return updatedProject;
+};
+
+const updateManyColumnOrder = async (
+  projectId: string,
+  updatedColumn: IUpdateColumnOrderDTO
+) => {
+  const { error } = projectValidation.updateProjectColumns(updatedColumn);
+  if (error) {
+    throw Error(error.details[0].message);
+  }
+
+  await Project.updateOne(
+    {
+      _id: projectId,
+    },
+    {
+      $inc: { "columns.$[elem1].order": 1 },
+    },
+    {
+      multi: true,
+      arrayFilters: [{ "elem1.order": { $gte: updatedColumn.order } }],
+    }
+  );
+
+  const sortedProject = await Project.updateOne(
+    {
+      _id: projectId,
+    },
+    {
+      $push: {
+        columns: {
+          $each: [],
+          $sort: { order: 1 },
+        },
+      },
+    }
+  );
+  return sortedProject;
 };
 
 const verifyIfUserCanAccessTheProject = async (
@@ -106,7 +149,8 @@ const projectService = {
   getProjectById,
   updateOneProject,
   updateProjectColumns,
-  updateProjectColumnsOrder,
+  updateOneColumnOrder,
+  updateManyColumnOrder,
   verifyIfUserCanAccessTheProject,
 };
 

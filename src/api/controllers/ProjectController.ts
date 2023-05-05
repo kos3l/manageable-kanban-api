@@ -9,15 +9,20 @@ import columnsService from "../services/ColumnService";
 import projectService from "../services/ProjectService";
 import { conn } from "../../server";
 import teamService from "../services/TeamService";
-import { use } from "chai";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
+    if (isUserInTheTeam == null) {
+      return res.status(500).send({
+        message:
+          "The user needs to be a part of the team to preview it's projects",
+      });
+    }
     const allProjects = await projectService.getAllProjects(teamId);
     return res.send(allProjects);
   } catch (error: any) {
@@ -27,12 +32,15 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
 
 const getProjectById = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
     const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
     return res.send(oneProject);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
@@ -40,7 +48,6 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 };
 
 // MARK: project changes status once the first task is added
-
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
   const newProject = req.body;
   const userId = req.user!;
@@ -97,12 +104,16 @@ const createNewProject = async (req: ExtendedRequest, res: Response) => {
 
 const updateOneProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
   const data: IUpdateProjectDTO = req.body;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data
@@ -127,13 +138,16 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
 
 const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
   const newColumnDto: ICreateColumnDTO = req.body;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
     const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
     const currentColumnsArray = oneProject[0].columns;
     if (currentColumnsArray.length == 98) {
       return res.status(500).send({ message: "Can't add more columns!" });
@@ -169,13 +183,16 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
 
 const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
   const columnId = req.params.columnId;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
     const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
     const currentColumnsArray = oneProject[0].columns;
     const newColumnsArray = currentColumnsArray.filter(
       (col) => !col._id.equals(columnId)
@@ -208,14 +225,17 @@ const changeColumnOrderOnProject = async (
   res: Response
 ) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
   const updatedColumn: IUpdateColumnOrderDTO = req.body;
 
   const session = await conn.startSession();
   try {
     session.startTransaction();
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn,
@@ -245,12 +265,15 @@ const changeColumnOrderOnProject = async (
 
 const updateColumn = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
-  const teamId = req.params.teamId;
-  const userId = req.user;
+  const userId = req.user!;
   const updatedColumn: IUpdateColumnDTO = req.body;
 
   try {
-    await projectService.verifyIfUserCanAccessTheProject(userId, teamId);
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
     const updatedProject = await projectService.updateColumn(
       projectId,
       updatedColumn
@@ -273,6 +296,50 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
+  const id: string = req.params.id;
+  const userId = req.user!;
+
+  const oneProject = await projectService.getProjectById(id);
+  await projectService.verifyIfUserCanAccessTheProject(
+    userId,
+    oneProject[0].teamId.toString()
+  );
+
+  const teamToBeDeleted = await teamService.getTeamById(userId, id);
+  if (teamToBeDeleted == null) {
+    return res.status(400).send({
+      message: "Cannot delete a team created by another user",
+    });
+  }
+
+  // const loggedInUser = await userService.getUserById(userId);
+  // if (
+  //   loggedInUser?.teams.length == 1 &&
+  //   loggedInUser?.teams.find((team) => team.equals(id))
+  // ) {
+  //   return res.status(400).send({
+  //     message:
+  //       "Cannot delete your only team! A user needs to belong to atleast one",
+  //   });
+  // }
+
+  // try {
+  //   const deletedTeam = await teamService.softDeleteOneTeam(id);
+  //   if (!deletedTeam) {
+  //     return res.status(404).send({
+  //       message: "Cannot delete team with id=" + id + ". Team was not found",
+  //     });
+  //   } else {
+  //     return res.status(201).send({ message: "Team was succesfully deleted." });
+  //   }
+  // } catch (err: any) {
+  //   return res
+  //     .status(500)
+  //     .send({ message: "Error deleting team with id" + id });
+  // }
+};
+
 // ADD: delete project
 // Implement status change
 // add all important validations
@@ -286,6 +353,7 @@ const projectController = {
   deleteColumnFromProject,
   changeColumnOrderOnProject,
   updateColumn,
+  deleteOneProject,
 };
 
 export default projectController;

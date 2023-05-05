@@ -144,18 +144,13 @@ const updateColumn = async (
 };
 
 const verifyIfUserCanAccessTheProject = async (
-  userId: string | undefined,
+  userId: string,
   teamId: string
 ) => {
-  if (!userId) {
-    throw new Error("Unauthorised");
-  }
-  // this kinda makes no sense because i can send as param any kind of teamid the user belongs to even if its unrelated to the project
-  // think about this
   const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
   if (isUserInTheTeam == null) {
     throw new Error(
-      "Can't preview projects of a team the user does not belong to"
+      "The user needs to be a part of the team to preview it's projects"
     );
   }
 };

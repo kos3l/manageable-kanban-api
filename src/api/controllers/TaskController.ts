@@ -44,14 +44,25 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
     };
 
     const createdTask = await taskService.createOneTask(taskDto);
+    const columnToBeUpdated = oneProject[0].columns.find((col) => {
+      createdTask.columnId == col._id;
+    });
+
+    let isTasksArrayEmpty = false;
+
+    if (columnToBeUpdated && columnToBeUpdated.tasks) {
+      if (columnToBeUpdated.tasks.length > 0) {
+        isTasksArrayEmpty = true;
+      }
+    }
 
     await projectService.addTaskToProjectColumn(
       createdTask.projectId.toString(),
       createdTask._id,
       createdTask.columnId.toString(),
+      isTasksArrayEmpty,
       session
     );
-
     await session.commitTransaction();
     return res.send(createdTask);
   } catch (error: any) {

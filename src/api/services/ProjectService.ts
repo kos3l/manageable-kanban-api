@@ -152,21 +152,27 @@ const addTaskToProjectColumn = async (
   projectId: string,
   taskId: mongoose.Types.ObjectId,
   columnId: string,
+  isEmpty: boolean,
   session?: mongoose.mongo.ClientSession
 ) => {
+  const mutation = isEmpty
+    ? {
+        $push: { "columns.$.tasks": taskId },
+      }
+    : {
+        $addToSet: {
+          "columns.$.tasks": taskId,
+        },
+      };
+
   const updatedProject = await Project.updateOne(
     {
       _id: projectId,
       "columns._id": columnId,
     },
-    {
-      $addToSet: {
-        "columns.$.tasks": taskId,
-      },
-    },
+    mutation,
     { session }
   );
-
   return updatedProject;
 };
 

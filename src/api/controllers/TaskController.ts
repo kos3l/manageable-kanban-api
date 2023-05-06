@@ -10,6 +10,8 @@ import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import mongoose from "mongoose";
 import projectValidation from "../validations/ProjectValidation";
+import { IUpdateUserToTask } from "../models/dtos/task/IUpdateUserToTask";
+import userService from "../services/UserService";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -208,6 +210,69 @@ const updateTasksOrderInColumn = async (
   }
 };
 
+const addUserToTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+  let payload: IUpdateUserToTask = req.body;
+
+  const session = await conn.startSession();
+  try {
+    session.startTransaction();
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+
+    // check if both logged in user and user to be added belong to the team
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      payload.userId,
+      oneProject.teamId.toString()
+    );
+
+    let isUserIdsArrayEmpty = false;
+    if (oneTask.userIds) {
+      if (oneTask.userIds.length > 0) {
+        isUserIdsArrayEmpty = true;
+      }
+    }
+
+    const updatedTask = await taskService.updateTaskByAddingUser(
+      taskId,
+      payload.userId,
+      isUserIdsArrayEmpty,
+      session
+    );
+
+    await userService.addTaskToUser(
+      payload.userId,
+      taskId,
+      isUserIdsArrayEmpty,
+      session
+    );
+
+    await session.commitTransaction();
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update column with id=" + taskId + ". Column was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Column task order was succesfully updated." });
+    }
+  } catch (err: any) {
+    await session.abortTransaction();
+    return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
+  }
+};
+
 const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -250,6 +315,7 @@ const taskController = {
   updateOneTask,
   updateTasksOrderInColumn,
   deleteOneTask,
+  addUserToTask,
 };
 
 export default taskController;

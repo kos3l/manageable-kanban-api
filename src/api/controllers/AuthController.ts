@@ -12,6 +12,7 @@ import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 
 const register = async (req: ExtendedRequest, res: Response) => {
   const session = await conn.startSession();
+  // add a dto
   try {
     session.startTransaction();
 
@@ -45,6 +46,7 @@ const register = async (req: ExtendedRequest, res: Response) => {
 
 const login = async (req: ExtendedRequest, res: Response) => {
   try {
+    // add a dto
     const loggedInUser = await authService.login(req.body);
 
     const username: string =

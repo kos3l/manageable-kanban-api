@@ -51,6 +51,12 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
       required: true,
       default: [],
     },
+    tasks: {
+      type: [Schema.Types.ObjectId],
+      ref: "Task",
+      required: true,
+      default: [],
+    },
     refreshToken: {
       type: String,
       required: false,

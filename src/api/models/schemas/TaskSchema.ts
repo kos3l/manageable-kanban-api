@@ -45,6 +45,12 @@ let taskSchema = new Schema<TaskDocument>(
       ref: "Project",
       required: true,
     },
+    userIds: {
+      type: [Schema.Types.ObjectId],
+      ref: "User",
+      required: true,
+      default: [],
+    },
   },
   { timestamps: true }
 );

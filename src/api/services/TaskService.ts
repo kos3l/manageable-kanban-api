@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
@@ -45,12 +46,40 @@ const updateOneTask = async (taskId: string, taskDto: IUpdateTaskDTO) => {
   return updatedTask;
 };
 
+const updateTaskByAddingUser = async (
+  taskId: string,
+  userId: string,
+  isEmpty: boolean,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const mutation = isEmpty
+    ? {
+        $push: { userIds: userId },
+      }
+    : {
+        $addToSet: {
+          userIds: userId,
+        },
+      };
+
+  const updatedTask = await Task.updateOne(
+    {
+      _id: taskId,
+    },
+    mutation,
+    { session }
+  );
+
+  return updatedTask;
+};
+
 const taskService = {
   getAllTasksByProjectId,
   createOneTask,
   getAllTasksByColumn,
   getOneTaskById,
   updateOneTask,
+  updateTaskByAddingUser,
 };
 
 export default taskService;

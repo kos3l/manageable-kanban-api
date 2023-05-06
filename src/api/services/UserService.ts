@@ -76,6 +76,35 @@ const removeTeamFromUser = async (
   return user;
 };
 
+const addTaskToUser = async (
+  id: string,
+  taskId: string,
+  isEmpty: boolean,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const mutation = isEmpty
+    ? {
+        $push: { tasks: taskId },
+      }
+    : { $addToSet: { tasks: taskId } };
+
+  const user = await User.updateOne({ _id: id }, mutation, { session });
+  return user;
+};
+
+const removeTaskFromUser = async (
+  id: string,
+  taskId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const user = await User.updateOne(
+    { _id: id },
+    { $pull: { tasks: taskId } },
+    { session }
+  );
+  return user;
+};
+
 const userService = {
   createNewUser,
   getUserById,
@@ -84,6 +113,8 @@ const userService = {
   getUserByRefreshToken,
   addTeamToUser,
   removeTeamFromUser,
+  addTaskToUser,
+  removeTaskFromUser,
 };
 
 export default userService;

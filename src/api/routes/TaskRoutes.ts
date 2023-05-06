@@ -20,10 +20,11 @@ router.post("/project/:projectId", taskController.createOneTask);
 // route: /api/task/:taskId
 router.put("/:taskId", taskController.updateOneTask);
 
-// update task order in column
+// route: /api/task/column/order
 router.put("/column/order", taskController.updateTasksOrderInColumn);
 
 // add users to task
+router.put("/:taskId/AddUser", taskController.addUserToTask);
 
 // remove users from task
 

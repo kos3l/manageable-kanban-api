@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, UpdateQuery } from "mongoose";
 import { ProjectDocument } from "../documents/ProjectDocument";
 import { TeamDocument } from "../documents/TeamDocument";
 import { ProjectStatus } from "../enum/ProjectStatus";
@@ -46,8 +46,47 @@ let projectSchema = new Schema<ProjectDocument>(
         required: true,
       },
     ],
+    isDeleted: {
+      type: Boolean,
+      required: true,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );
 
+projectSchema.pre(
+  "findOneAndUpdate",
+  function (this: UpdateQuery<ProjectDocument>): void {
+    const update = this.getUpdate();
+    if (!update) {
+      return;
+    }
+    if (update.__v != null) {
+      delete update.__v;
+    }
+    const keys = ["$set", "$setOnInsert"];
+    for (const key of keys) {
+      if (update[key] != null && update[key].__v != null) {
+        delete update[key].__v;
+        if (Object.keys(update[key]).length === 0) {
+          delete update[key];
+        }
+      }
+    }
+    update.$inc = update.$inc || {};
+    update.$inc.__v = 1;
+  }
+);
+projectSchema.pre("find", function () {
+  this.where({ isDeleted: false });
+});
+
+projectSchema.pre("findOne", function () {
+  this.where({ isDeleted: false });
+});
 export const Project = model<ProjectDocument>("project", projectSchema);

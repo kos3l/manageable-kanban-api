@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { ColumnDocument } from "../../documents/ColumnDocument";
 
 export interface ICreateProjectDTO {
@@ -7,6 +6,6 @@ export interface ICreateProjectDTO {
   techStack: string[];
   startDate: Date;
   endDate: Date;
-  teamId: mongoose.Types.ObjectId;
+  teamId: string;
   columns: ColumnDocument[];
 }

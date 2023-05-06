@@ -15,7 +15,8 @@ const createTeamValidation = (data: ICreateTeamDTO) => {
 const updateTeamMembersValidation = (data: IUpdateTeamDTO) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255),
-    users: Joi.array<string>().min(1).max(20).required(),
+    users: Joi.array<string>().min(1).max(20),
+    projects: Joi.array<string>().min(1).max(200),
   });
   return schema.validate(data);
 };

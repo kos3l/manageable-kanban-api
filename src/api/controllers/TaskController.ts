@@ -6,6 +6,7 @@ import projectService from "../services/ProjectService";
 import taskService from "../services/TaskService";
 import { conn } from "../../server";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
+import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -15,7 +16,7 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     const allTasks = await taskService.getAllTasksByProjectId(projectId);
@@ -33,7 +34,7 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(payload.projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     const allTasks = await taskService.getAllTasksByColumn(payload);
@@ -50,11 +51,11 @@ const getOneTaskById = async (req: ExtendedRequest, res: Response) => {
   try {
     const oneTask = await taskService.getOneTaskById(taskId);
     const oneProject = await projectService.getProjectById(
-      oneTask[0].projectId.toString()
+      oneTask.projectId.toString()
     );
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     return res.send(oneTask);
@@ -74,7 +75,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     const taskDto: ICreateTaskModel = {
@@ -83,7 +84,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
     };
 
     const createdTask = await taskService.createOneTask(taskDto);
-    const columnToBeUpdated = oneProject[0].columns.find((col) => {
+    const columnToBeUpdated = oneProject.columns.find((col) => {
       createdTask.columnId == col._id;
     });
 
@@ -112,11 +113,77 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const updateOneTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+  const data: IUpdateTaskDTO = req.body;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    const updatedProject = await taskService.updateOneTask(taskId, data);
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update task with id=" + taskId + ". Task was not found",
+      });
+    } else {
+      return res.status(201).send({ message: "Task was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const userId = req.user!;
+  // const data: IUpdateProjectDTO = req.body;
+
+  // try {
+  //   const oneProject = await projectService.getProjectById(projectId);
+  //   await projectService.verifyIfUserCanAccessTheProject(
+  //     userId,
+  //     oneProject[0].teamId.toString()
+  //   );
+
+  //   const updatedProject = await projectService.updateOneProject(
+  //     projectId,
+  //     data
+  //   );
+
+  //   if (!updatedProject) {
+  //     return res.status(404).send({
+  //       message:
+  //         "Cannot update project with id=" +
+  //         projectId +
+  //         ". Project was not found",
+  //     });
+  //   } else {
+  //     return res
+  //       .status(201)
+  //       .send({ message: "Project was succesfully updated." });
+  //   }
+  // } catch (err: any) {
+  //   return res.status(500).send({ message: err.message });
+  // }
+};
+
 const taskController = {
   getAllTasksByProjectId,
   createOneTask,
   getAllTasksByColumn,
   getOneTaskById,
+  updateOneTask,
+  deleteOneTask,
 };
 
 export default taskController;

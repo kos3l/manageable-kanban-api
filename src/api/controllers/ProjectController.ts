@@ -40,7 +40,7 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     return res.send(oneProject);
@@ -113,7 +113,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     const updatedProject = await projectService.updateOneProject(
@@ -152,10 +152,10 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
-    const currentColumnsArray = oneProject[0].columns;
+    const currentColumnsArray = oneProject.columns;
     if (currentColumnsArray.length == 98) {
       return res.status(500).send({ message: "Can't add more columns!" });
     }
@@ -198,10 +198,10 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
-    const currentColumnsArray = oneProject[0].columns;
+    const currentColumnsArray = oneProject.columns;
     const newColumnsArray = currentColumnsArray.filter(
       (col) => !col._id.equals(columnId)
     );
@@ -242,7 +242,7 @@ const changeColumnOrderOnProject = async (
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
@@ -280,7 +280,7 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const updatedProject = await projectService.updateColumn(
       projectId,
@@ -313,7 +313,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const deletedProject = await projectService.softDeleteOneProject(projectId);
     if (!deletedProject) {

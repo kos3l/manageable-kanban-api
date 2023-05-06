@@ -7,20 +7,21 @@ const router = express.Router();
 // route: /api/task/project/:projectId
 router.get("/project/:projectId", taskController.getAllTasksByProjectId);
 
-// all tasks for a column of a project
 // route: /api/task/column
 router.get("/column", taskController.getAllTasksByColumn);
 
-// task by task id
+// route: /api/task/:taskId
 router.get("/:taskId", taskController.getOneTaskById);
 
 // route: /api/task/column
 router.post("/project/:projectId", taskController.createOneTask);
 
-// update task main info
+// route: /api/task/:taskId
+router.put("/:taskId", taskController.updateOneTask);
 
 // update task order in column
 
-// delete task
+// route: /api/task/:taskId
+router.delete("/:taskId", taskController.deleteOneTask);
 
 export = router;

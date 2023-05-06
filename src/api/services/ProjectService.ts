@@ -15,7 +15,7 @@ const getAllProjects = async (teamId: string) => {
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
-  return project;
+  return project[0];
 };
 
 const createNewProject = async (

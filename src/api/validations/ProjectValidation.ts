@@ -6,6 +6,7 @@ import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
+import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 
 const createProjectValidation = (data: ICreateProjectDTO) => {
   const schema = Joi.object({
@@ -54,11 +55,21 @@ const updateProjectColumn = (data: IUpdateColumnDTO) => {
   return schema.validate(data);
 };
 
+const updateColumnTaskOrder = (data: IUpdateTaskOrderDTO) => {
+  const schema = Joi.object({
+    columnId: Joi.string().required(),
+    projectId: Joi.string().required(),
+    tasks: Joi.array<string>().required(),
+  });
+  return schema.validate(data);
+};
+
 const projectValidation = {
   createProjectValidation,
   updateProjectValidation,
   updateProjectColumnsOrder,
   updateProjectColumn,
   createNewColumnValidation,
+  updateColumnTaskOrder,
 };
 export default projectValidation;

@@ -1,5 +1,6 @@
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
+import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { Task } from "../models/schemas/TaskSchema";
 import taskValidation from "../validations/TaskValidation";

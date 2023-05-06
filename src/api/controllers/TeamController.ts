@@ -132,6 +132,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       });
     }
 
+    // remove users from tasks!!
     let removedUsers = membersBeforeUpdate?.filter(
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
@@ -145,7 +146,6 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
         throw Error("Can't remove the team creator!");
       }
 
-      //update to be done thoguth update many
       for (const id of removed) {
         await userService.removeTeamFromUser(
           id,

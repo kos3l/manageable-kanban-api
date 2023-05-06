@@ -7,6 +7,9 @@ import taskService from "../services/TaskService";
 import { conn } from "../../server";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
+import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
+import mongoose from "mongoose";
+import projectValidation from "../validations/ProjectValidation";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -143,6 +146,68 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const updateTasksOrderInColumn = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
+  const userId = req.user!;
+  let data: IUpdateTaskOrderDTO = req.body;
+
+  try {
+    const { error } = projectValidation.updateColumnTaskOrder(data);
+    if (error) {
+      throw Error(error.details[0].message);
+    }
+    const oneProject = await projectService.getProjectById(data.projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+    const columnBeforeUpdate = oneProject.columns.find((col) =>
+      col._id.equals(data.columnId)
+    );
+
+    if (columnBeforeUpdate == undefined) {
+      return res.status(500).send({ message: "No column found" });
+    }
+    const tasksAsObjectIds = columnBeforeUpdate.tasks.map((task) =>
+      task.toString()
+    );
+
+    // Make sure that no task was deleted or added
+    const set1 = new Set(tasksAsObjectIds);
+    const set2 = new Set(data.tasks);
+
+    const taskArrayHasAllElements =
+      tasksAsObjectIds.every((item) => set2.has(item)) &&
+      data.tasks.every((item) => set1.has(item));
+
+    if (!taskArrayHasAllElements) {
+      return res.status(500).send({
+        message: "The tasks from request are different from the original ones",
+      });
+    }
+
+    // make sure there are no duplicates
+    data.tasks = [...new Set(data.tasks)];
+    const updatedProject = await projectService.updateColumnTaskOrder(data);
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update column with id=" +
+          data.columnId +
+          ". Column was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Column task order was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -183,6 +248,7 @@ const taskController = {
   getAllTasksByColumn,
   getOneTaskById,
   updateOneTask,
+  updateTasksOrderInColumn,
   deleteOneTask,
 };
 

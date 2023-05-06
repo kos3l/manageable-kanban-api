@@ -7,6 +7,7 @@ import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
 import teamService from "./TeamService";
+import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -175,6 +176,21 @@ const addTaskToProjectColumn = async (
   return updatedProject;
 };
 
+const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: newTaskDto.projectId,
+      "columns._id": newTaskDto.columnId,
+    },
+    {
+      $set: {
+        "columns.$.tasks": newTaskDto.tasks,
+      },
+    }
+  );
+  return updatedProject;
+};
+
 const verifyIfUserCanAccessTheProject = async (
   userId: string,
   teamId: string
@@ -206,6 +222,7 @@ const projectService = {
   updateColumn,
   softDeleteOneProject,
   addTaskToProjectColumn,
+  updateColumnTaskOrder,
 };
 
 export default projectService;

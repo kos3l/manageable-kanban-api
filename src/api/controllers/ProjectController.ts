@@ -297,44 +297,36 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
 };
 
 const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
-  const id: string = req.params.id;
+  const projectId = req.params.projectId;
   const userId = req.user!;
 
-  const oneProject = await projectService.getProjectById(id);
-  await projectService.verifyIfUserCanAccessTheProject(
-    userId,
-    oneProject[0].teamId.toString()
-  );
   // when fetching taskss make sure their project is not deleted
-
-  // const loggedInUser = await userService.getUserById(userId);
-  // if (
-  //   loggedInUser?.teams.length == 1 &&
-  //   loggedInUser?.teams.find((team) => team.equals(id))
-  // ) {
-  //   return res.status(400).send({
-  //     message:
-  //       "Cannot delete your only team! A user needs to belong to atleast one",
-  //   });
-  // }
-
-  // try {
-  //   const deletedTeam = await teamService.softDeleteOneTeam(id);
-  //   if (!deletedTeam) {
-  //     return res.status(404).send({
-  //       message: "Cannot delete team with id=" + id + ". Team was not found",
-  //     });
-  //   } else {
-  //     return res.status(201).send({ message: "Team was succesfully deleted." });
-  //   }
-  // } catch (err: any) {
-  //   return res
-  //     .status(500)
-  //     .send({ message: "Error deleting team with id" + id });
-  // }
+  try {
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+    const deletedProject = await projectService.softDeleteOneProject(projectId);
+    if (!deletedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot delete project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Project was succesfully deleted." });
+    }
+  } catch (err: any) {
+    return res
+      .status(500)
+      .send({ message: "Error deleting Project with id" + projectId });
+  }
 };
 
-// ADD: delete project
 // Implement status change
 // add all important validations
 

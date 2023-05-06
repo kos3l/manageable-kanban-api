@@ -155,6 +155,14 @@ const verifyIfUserCanAccessTheProject = async (
   }
 };
 
+const softDeleteOneProject = async (id: string) => {
+  const deletedProject = await Project.findByIdAndUpdate(id, {
+    isDeleted: true,
+    deletedAt: Date.now(),
+  });
+  return deletedProject;
+};
+
 const projectService = {
   createNewProject,
   getAllProjects,
@@ -164,6 +172,7 @@ const projectService = {
   updateOneColumnOrder,
   verifyIfUserCanAccessTheProject,
   updateColumn,
+  softDeleteOneProject,
 };
 
 export default projectService;

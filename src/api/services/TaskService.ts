@@ -16,6 +16,13 @@ const getAllTasksByColumn = async (getTaskDto: IGetTasksByColumnDTO) => {
   return allTasks;
 };
 
+const getOneTaskById = async (taskId: string) => {
+  const oneTask = await Task.find({
+    _id: taskId,
+  });
+  return oneTask;
+};
+
 const createOneTask = async (taskDto: ICreateTaskModel) => {
   const { error } = taskValidation.createTaskValidation(taskDto);
   if (error) {
@@ -30,6 +37,7 @@ const taskService = {
   getAllTasksByProjectId,
   createOneTask,
   getAllTasksByColumn,
+  getOneTaskById,
 };
 
 export default taskService;

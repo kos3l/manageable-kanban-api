@@ -43,6 +43,26 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const getOneTaskById = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask[0].projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
+    return res.send(oneTask);
+  } catch (error: any) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
 const createOneTask = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -96,6 +116,7 @@ const taskController = {
   getAllTasksByProjectId,
   createOneTask,
   getAllTasksByColumn,
+  getOneTaskById,
 };
 
 export default taskController;

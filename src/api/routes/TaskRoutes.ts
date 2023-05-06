@@ -12,6 +12,7 @@ router.get("/project/:projectId", taskController.getAllTasksByProjectId);
 router.get("/column", taskController.getAllTasksByColumn);
 
 // task by task id
+router.get("/:taskId", taskController.getOneTaskById);
 
 // route: /api/task/column
 router.post("/project/:projectId", taskController.createOneTask);

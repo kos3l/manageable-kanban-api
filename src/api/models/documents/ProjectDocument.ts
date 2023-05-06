@@ -12,4 +12,6 @@ export interface ProjectDocument {
   endDate: Date;
   teamId: mongoose.Types.ObjectId;
   columns: ColumnDocument[];
+  isDeleted: boolean;
+  deletedAt?: Date;
 }

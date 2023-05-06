@@ -9,5 +9,6 @@ export interface TaskDocument {
   endDate: Date;
   picture?: string;
   columnId: mongoose.Types.ObjectId;
+  projectId: mongoose.Types.ObjectId;
   labels?: LabelDocument[];
 }

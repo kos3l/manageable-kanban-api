@@ -2,6 +2,9 @@ import express from "express";
 import userController from "../controllers/UserController";
 const router = express.Router();
 
+// route: /api/user/profile
+router.get("/profile", userController.getLoggedInUserProfile);
+
 // route: /api/user/:id
 router.get("/:id", userController.getUserById);
 

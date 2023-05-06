@@ -60,14 +60,11 @@ const login = async (req: ExtendedRequest, res: Response) => {
       refreshToken: refreshToken,
     });
 
-    console.log(process.env.API_DOMAIN, "cookie domain - auth controller");
-
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",
       //issues on local host it needs to be false for postman to work, shoold be false in dev
       secure: true,
-      // one true
       maxAge: 24 * 60 * 60 * 1000,
       domain: process.env.API_DOMAIN,
     });
@@ -88,14 +85,22 @@ const logout = async (req: ExtendedRequest, res: Response) => {
       refreshToken
     );
     if (!userWithThisRefreshToken) {
-      res.clearCookie("jwt", { httpOnly: true, secure: true });
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        secure: true,
+        domain: process.env.API_DOMAIN,
+      });
       return res.sendStatus(204);
     }
 
     await userService.updateUser(userWithThisRefreshToken.id, {
       refreshToken: "",
     });
-    res.clearCookie("jwt", { httpOnly: true, secure: true });
+    res.clearCookie("jwt", {
+      httpOnly: true,
+      secure: true,
+      domain: process.env.API_DOMAIN,
+    });
     return res.sendStatus(204);
   } catch (error) {
     return res.status(400).json(error);

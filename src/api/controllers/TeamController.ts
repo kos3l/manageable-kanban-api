@@ -126,18 +126,32 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
     if (removedUsers && removedUsers.length > 0) {
-      await teamService.removeMemembersFromATeam(
-        removedUsers.map((user) => user.toString()),
-        teamUpdateQueryResult,
-        session
+      const removed = removedUsers.map((user) => user.toString());
+      const isTeamCreatorRemoved = removed.find((userId) =>
+        teamUpdateQueryResult?.createdBy.equals(userId)
       );
+
+      if (isTeamCreatorRemoved) {
+        throw Error("Can't remove the team creator!");
+      }
+
+      //update to be done thoguth update many
+      for (const id of removed) {
+        await userService.removeTeamFromUser(
+          id,
+          teamUpdateQueryResult.id,
+          session
+        );
+      }
     }
 
     let addedUsers = teamPayload.users?.filter(
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );
     if (addedUsers && addedUsers.length > 0) {
-      await teamService.addMemembersToATeam(addedUsers, teamId, session);
+      for (const id of addedUsers) {
+        await userService.addTeamToUser(id, teamId, session);
+      }
     }
 
     await session.commitTransaction();

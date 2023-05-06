@@ -6,7 +6,7 @@ info:
 servers:
   - url: http://localhost:4000/api/
     description: Localhost development server
-  - url: https://manageable.onrender.com/api/
+  - url: https://api.neon-dev.dk/api/
     description: Deployed production server
 components:
   securitySchemes:

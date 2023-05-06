@@ -49,12 +49,40 @@ const updateUser = async (
   }
 };
 
+const addTeamToUser = async (
+  id: string,
+  teamId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const user = await User.updateOne(
+    { _id: id },
+    { $addToSet: { teams: teamId } },
+    { session }
+  );
+  return user;
+};
+
+const removeTeamFromUser = async (
+  id: string,
+  teamId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const user = await User.updateOne(
+    { _id: id },
+    { $pull: { teams: teamId } },
+    { session }
+  );
+  return user;
+};
+
 const userService = {
   createNewUser,
   getUserById,
   getUserByEmail,
   updateUser,
   getUserByRefreshToken,
+  addTeamToUser,
+  removeTeamFromUser,
 };
 
 export default userService;

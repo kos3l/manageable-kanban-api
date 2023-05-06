@@ -40,9 +40,14 @@ let taskSchema = new Schema<TaskDocument>(
         required: false,
       },
     ],
+    projectId: {
+      type: Schema.Types.ObjectId,
+      ref: "Project",
+      required: true,
+    },
   },
   { timestamps: true }
 );
-const Task = model<TaskDocument>("team", taskSchema);
+const Task = model<TaskDocument>("task", taskSchema);
 
 export { taskSchema, Task };

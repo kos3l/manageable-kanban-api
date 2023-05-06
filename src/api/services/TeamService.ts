@@ -80,69 +80,12 @@ const softDeleteOneTeam = async (id: string) => {
   return deletedTeam;
 };
 
-const removeMemembersFromATeam = async (
-  removedUsers: string[],
-  updatedTeam: TeamDocument,
-  session: mongoose.mongo.ClientSession
-) => {
-  const isTeamCreatorRemoved = removedUsers.find((userId) =>
-    updatedTeam?.createdBy.equals(userId)
-  );
-
-  if (isTeamCreatorRemoved) {
-    throw Error("Can't remove the team creator!");
-  }
-
-  for (const id of removedUsers) {
-    const user = await userService.getUserById(id);
-    if (user && user.teams.length > 1) {
-      const newUserTeam = user.teams.filter(
-        (team) => !team.equals(updatedTeam.id)
-      );
-      const fetchedUserTeamArray = newUserTeam;
-      await userService.updateUser(
-        user.id,
-        {
-          teams: fetchedUserTeamArray,
-        },
-        session
-      );
-    }
-  }
-};
-
-const addMemembersToATeam = async (
-  addedUsers: string[],
-  teamId: string,
-  session: mongoose.mongo.ClientSession
-) => {
-  for (const id of addedUsers) {
-    const user = await userService.getUserById(id);
-    if (user && !user.teams.find((team) => team.equals(teamId))) {
-      const fetchedUserTeamArray =
-        user.teams.length > 0
-          ? [...user.teams, new mongoose.Types.ObjectId(teamId)]
-          : [new mongoose.Types.ObjectId(teamId)];
-
-      await userService.updateUser(
-        user.id,
-        {
-          teams: fetchedUserTeamArray,
-        },
-        session
-      );
-    }
-  }
-};
-
 const teamService = {
   getAllTeams,
   getTeamById,
   createNewTeam,
   updateOneTeam,
   softDeleteOneTeam,
-  removeMemembersFromATeam,
-  addMemembersToATeam,
 };
 
 export default teamService;

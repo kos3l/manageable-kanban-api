@@ -1,7 +1,8 @@
 import mongoose from "mongoose";
 
 export interface ColumnDocument {
-  id: string;
+  _id: mongoose.Types.ObjectId;
   name: string;
+  order: number;
   tasks: mongoose.Types.ObjectId[];
 }

@@ -1,4 +1,4 @@
-import { ICreateTaskModel } from "../models/dtos/task/ICreateTaskModel";
+import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { Task } from "../models/schemas/TaskSchema";
 import taskValidation from "../validations/TaskValidation";
 

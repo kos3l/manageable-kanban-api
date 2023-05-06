@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { IUpdateUserDTO } from "./IUpdateUserDTO";
-import { IUpdateUserRefreshToken } from "./IUpdateUserRefreshTokenDTO";
+import { IUpdateUserDTO } from "../IUpdateUserDTO";
+import { IUpdateUserRefreshToken } from "../IUpdateUserRefreshTokenDTO";
 
 export interface IUpdateUserModel
   extends IUpdateUserDTO,

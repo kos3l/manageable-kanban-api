@@ -7,10 +7,10 @@ import teamService from "../services/TeamService";
 import userService from "../services/UserService";
 import { conn } from "../../server";
 import { UserHelper } from "../helpers/UserHelper";
-import { ICreateTeamModel } from "../models/dtos/team/ICreateTeamModel";
+import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
-import { IUpdateTeamModel } from "../models/dtos/team/IUpdateTeamModel";
-import { IUpdateUserModel } from "../models/dtos/user/IUpdateUserModel";
+import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
+import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 import teamValidation from "../validations/TeamValidation";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {

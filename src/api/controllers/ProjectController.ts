@@ -9,8 +9,8 @@ import projectService from "../services/ProjectService";
 import { conn } from "../../server";
 import teamService from "../services/TeamService";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
-import { ICreateModelDTO } from "../models/dtos/project/ICreateProjectModel";
-import { IUpdateTeamModel } from "../models/dtos/team/IUpdateTeamModel";
+import { ICreateModelDTO } from "../models/dtos/project/model/ICreateProjectModel";
+import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {

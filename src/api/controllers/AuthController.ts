@@ -7,8 +7,8 @@ import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { conn } from "../../server";
 import userService from "../services/UserService";
-import { ICreateTeamModel } from "../models/dtos/team/ICreateTeamModel";
-import { IUpdateUserModel } from "../models/dtos/user/IUpdateUserModel";
+import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
+import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 
 const register = async (req: ExtendedRequest, res: Response) => {
   const session = await conn.startSession();

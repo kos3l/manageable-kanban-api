@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import { TeamDocument } from "../models/documents/TeamDocument";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
-import { ICreateTeamModel } from "../models/dtos/team/ICreateTeamModel";
+import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
-import { IUpdateTeamModel } from "../models/dtos/team/IUpdateTeamModel";
+import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { IUpdateTeamProjectsDTO } from "../models/dtos/team/IUpdateTeamProjectsDTO";
 import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
 import { Team } from "../models/schemas/TeamSchema";

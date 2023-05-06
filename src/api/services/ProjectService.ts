@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
-import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { ICreateModelDTO } from "../models/dtos/project/model/ICreateProjectModel";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";

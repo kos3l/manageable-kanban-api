@@ -5,6 +5,7 @@ import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import projectService from "../services/ProjectService";
 import taskService from "../services/TaskService";
 import { conn } from "../../server";
+import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -17,8 +18,26 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
       oneProject[0].teamId.toString()
     );
 
-    const allProjects = await taskService.getAllTasksByProjectId(projectId);
-    return res.send(allProjects);
+    const allTasks = await taskService.getAllTasksByProjectId(projectId);
+    return res.send(allTasks);
+  } catch (error: any) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
+const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
+  const payload: IGetTasksByColumnDTO = req.body;
+  const userId = req.user!;
+
+  try {
+    const oneProject = await projectService.getProjectById(payload.projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject[0].teamId.toString()
+    );
+
+    const allTasks = await taskService.getAllTasksByColumn(payload);
+    return res.send(allTasks);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
   }
@@ -76,6 +95,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
 const taskController = {
   getAllTasksByProjectId,
   createOneTask,
+  getAllTasksByColumn,
 };
 
 export default taskController;

@@ -73,7 +73,7 @@ const updateOneColumnOrder = async (
   updatedColumn: IUpdateColumnOrderDTO,
   session: mongoose.mongo.ClientSession
 ) => {
-  const { error } = projectValidation.updateProjectColumns(updatedColumn);
+  const { error } = projectValidation.updateProjectColumnsOrder(updatedColumn);
   if (error) {
     throw Error(error.details[0].message);
   }
@@ -129,6 +129,10 @@ const updateColumn = async (
   projectId: string,
   updatedColumn: IUpdateColumnDTO
 ) => {
+  const { error } = projectValidation.updateProjectColumn(updatedColumn);
+  if (error) {
+    throw Error(error.details[0].message);
+  }
   const updatedProject = await Project.updateOne(
     {
       _id: projectId,

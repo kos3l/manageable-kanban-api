@@ -30,7 +30,7 @@ const updateProjectValidation = (data: IUpdateProjectDTO) => {
   return schema.validate(data);
 };
 
-const updateProjectColumns = (data: IUpdateColumnOrderDTO) => {
+const updateProjectColumnsOrder = (data: IUpdateColumnOrderDTO) => {
   const schema = Joi.object({
     columnId: Joi.string().required(),
     order: Joi.number().min(0).max(300).required(),
@@ -38,9 +38,18 @@ const updateProjectColumns = (data: IUpdateColumnOrderDTO) => {
   return schema.validate(data);
 };
 
+const updateProjectColumn = (data: IUpdateColumnDTO) => {
+  const schema = Joi.object({
+    id: Joi.string().min(2).max(255).required(),
+    name: Joi.number().min(0).max(300).required(),
+  });
+  return schema.validate(data);
+};
+
 const projectValidation = {
   createProjectValidation,
   updateProjectValidation,
-  updateProjectColumns,
+  updateProjectColumnsOrder,
+  updateProjectColumn,
 };
 export default projectValidation;

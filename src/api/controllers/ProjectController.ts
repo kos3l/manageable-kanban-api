@@ -1,5 +1,4 @@
 import { Response } from "express";
-import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateColumnDTO } from "../models/dtos/project/ICreateColumnDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
@@ -155,6 +154,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
     const biggestOrderNumber = currentColumnsArray
       .sort((col1, col2) => col1.order - col2.order)
       .reverse()[0].order;
+
     const newColumn = columnsService.createNewColumn(
       newColumnDto.name,
       biggestOrderNumber + 1
@@ -328,7 +328,6 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
 };
 
 // Implement status change
-// add all important validations
 
 const projectController = {
   getAllProjects,

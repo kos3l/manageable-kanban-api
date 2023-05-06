@@ -6,7 +6,6 @@ import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import teamService from "../services/TeamService";
 import userService from "../services/UserService";
 import { conn } from "../../server";
-import { UserHelper } from "../helpers/UserHelper";
 import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";

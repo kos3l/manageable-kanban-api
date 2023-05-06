@@ -148,6 +148,28 @@ const updateColumn = async (
   return updatedProject;
 };
 
+const addTaskToProjectColumn = async (
+  projectId: string,
+  taskId: mongoose.Types.ObjectId,
+  columnId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": columnId,
+    },
+    {
+      $addToSet: {
+        "columns.$.tasks": taskId,
+      },
+    },
+    { session }
+  );
+
+  return updatedProject;
+};
+
 const verifyIfUserCanAccessTheProject = async (
   userId: string,
   teamId: string
@@ -178,6 +200,7 @@ const projectService = {
   verifyIfUserCanAccessTheProject,
   updateColumn,
   softDeleteOneProject,
+  addTaskToProjectColumn,
 };
 
 export default projectService;

@@ -3,7 +3,7 @@ import { ICreateTaskDTO } from "../models/dtos/task/ICreateTaskDTO";
 
 const createTaskValidation = (data: ICreateTaskDTO) => {
   const schema = Joi.object({
-    name: Joi.string().min(2).max(255).required(),
+    title: Joi.string().min(2).max(255).required(),
     description: Joi.string().min(3).max(1056),
     startDate: Joi.date().required(),
     endDate: Joi.date().required(),

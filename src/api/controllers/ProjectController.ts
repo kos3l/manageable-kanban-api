@@ -185,7 +185,7 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
   const columnId = req.params.columnId;
-
+  // when tasks are added, remember to update this and delete tasks that were on this column
   try {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
@@ -305,13 +305,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
     userId,
     oneProject[0].teamId.toString()
   );
-
-  const teamToBeDeleted = await teamService.getTeamById(userId, id);
-  if (teamToBeDeleted == null) {
-    return res.status(400).send({
-      message: "Cannot delete a team created by another user",
-    });
-  }
+  // when fetching taskss make sure their project is not deleted
 
   // const loggedInUser = await userService.getUserById(userId);
   // if (

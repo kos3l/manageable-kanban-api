@@ -7,12 +7,14 @@ import teamService from "../services/TeamService";
 import userService from "../services/UserService";
 import { conn } from "../../server";
 import { UserHelper } from "../helpers/UserHelper";
+import { ICreateTeamModel } from "../models/dtos/team/ICreateTeamModel";
+import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
+import { IUpdateTeamModel } from "../models/dtos/team/IUpdateTeamModel";
+import { IUpdateUserModel } from "../models/dtos/user/IUpdateUserModel";
+import teamValidation from "../validations/TeamValidation";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
-  if (!req.user) {
-    return res.status(401).send({ message: "Unauthorised" });
-  }
-  const id = req.user;
+  const id = req.user!;
   try {
     const allTeams = await teamService.getAllTeams(id);
     return res.send(allTeams);
@@ -22,10 +24,7 @@ const getAllTeams = async (req: ExtendedRequest, res: Response) => {
 };
 
 const getTeamById = async (req: ExtendedRequest, res: Response) => {
-  if (!req.user) {
-    return res.status(401).send({ message: "Unauthorised" });
-  }
-  const userId = req.user;
+  const userId = req.user!;
   const teamId = req.params.id;
 
   try {
@@ -37,13 +36,9 @@ const getTeamById = async (req: ExtendedRequest, res: Response) => {
 };
 
 const createNewTeam = async (req: ExtendedRequest, res: Response) => {
-  const newTeam = req.body;
-
-  if (!req.user) {
-    return res.status(401).send({ message: "Unauthorised" });
-  }
-  const userId = req.user;
-  const newTeamDTO: ICreateTeamDTO = {
+  const newTeam: ICreateTeamDTO = req.body;
+  const userId = req.user!;
+  const newTeamDTO: ICreateTeamModel = {
     ...newTeam,
     createdBy: new mongoose.Types.ObjectId(userId),
     users: [new mongoose.Types.ObjectId(userId)],
@@ -68,8 +63,9 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
         ? [...userToBeUpdated.teams, newTeam._id]
         : [newTeam._id];
 
-    const updatedUser = UserHelper.createUpdateUserDTO(userToBeUpdated);
-    await userService.updateUser(userId, updatedUser);
+    await userService.updateUser(userId, {
+      teams: userToBeUpdated.teams,
+    } as IUpdateUserModel);
 
     await session.commitTransaction();
     return res.send(newTeam);
@@ -86,7 +82,15 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
   const data: IUpdateTeamDTO = req.body;
 
   try {
-    const updatedTeam = await teamService.updateOneTeam(id, data);
+    const { error } = teamValidation.updateTeamValidation(data);
+    if (error) {
+      return res.status(500).send({ message: error.details[0].message });
+    }
+
+    const updatedTeam = await teamService.updateOneTeam(
+      id,
+      data as IUpdateTeamModel
+    );
 
     if (!updatedTeam) {
       return res.status(404).send({
@@ -102,14 +106,21 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
 
 const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
   const teamId: string = req.params.id;
-  let teamPayload: IUpdateTeamDTO = req.body;
+  let teamPayload: IUpdateTeamUsersDTO = req.body;
 
   const session = await conn.startSession();
   try {
     session.startTransaction();
+    const { error } = teamValidation.updateTeamUsersValidation(teamPayload);
+    if (error) {
+      return res.status(500).send({ message: error.details[0].message });
+    }
+    const sanitisedUserIds = [...new Set(teamPayload.users)];
+    teamPayload.users = sanitisedUserIds;
+
     const teamUpdateQueryResult = await teamService.updateOneTeam(
       teamId,
-      teamPayload,
+      teamPayload as IUpdateTeamModel,
       session
     );
     const membersBeforeUpdate = teamUpdateQueryResult?.users;
@@ -166,11 +177,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
 
 const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
   const id: string = req.params.id;
-  const userId = req.user;
-
-  if (!userId) {
-    return res.status(401).send();
-  }
+  const userId = req.user!;
 
   const teamToBeDeleted = await teamService.getTeamById(userId, id);
   if (teamToBeDeleted == null) {

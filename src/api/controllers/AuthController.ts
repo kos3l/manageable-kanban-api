@@ -7,6 +7,8 @@ import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { conn } from "../../server";
 import userService from "../services/UserService";
+import { ICreateTeamModel } from "../models/dtos/team/ICreateTeamModel";
+import { IUpdateUserModel } from "../models/dtos/user/IUpdateUserModel";
 
 const register = async (req: ExtendedRequest, res: Response) => {
   const session = await conn.startSession();
@@ -14,7 +16,7 @@ const register = async (req: ExtendedRequest, res: Response) => {
     session.startTransaction();
 
     const savedUser = await authService.register(req.body);
-    const teamData: ICreateTeamDTO = {
+    const teamData: ICreateTeamModel = {
       name: "My first team",
       createdBy: new mongoose.Types.ObjectId(savedUser.id),
       users: [new mongoose.Types.ObjectId(savedUser.id)],
@@ -22,7 +24,7 @@ const register = async (req: ExtendedRequest, res: Response) => {
 
     const firstTeam = await teamService.createNewTeam(teamData, session);
 
-    const updatedUser = {
+    const updatedUser: IUpdateUserModel = {
       firstName: savedUser.firstName,
       lastName: savedUser.lastName,
       birthdate: savedUser.birthdate,

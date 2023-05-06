@@ -7,7 +7,6 @@ export class UserHelper {
       firstName: user.firstName,
       lastName: user.lastName,
       birthdate: user.birthdate,
-      teams: user.teams,
     };
   }
 }

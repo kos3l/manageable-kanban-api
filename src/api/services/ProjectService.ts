@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { ICreateModelDTO } from "../models/dtos/project/ICreateProjectModel";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
@@ -19,7 +20,7 @@ const getProjectById = async (projectId: string) => {
 };
 
 const createNewProject = async (
-  projectDto: ICreateProjectDTO,
+  projectDto: ICreateModelDTO,
   session?: mongoose.mongo.ClientSession
 ) => {
   const { error } = projectValidation.createProjectValidation(projectDto);

@@ -1,6 +1,5 @@
 import { Schema } from "mongoose";
 import { ColumnDocument } from "../documents/ColumnDocument";
-import { taskSchema } from "./TaskSchema";
 
 export let columnSchema = new Schema<ColumnDocument>({
   name: {
@@ -9,12 +8,12 @@ export let columnSchema = new Schema<ColumnDocument>({
     minlength: 2,
     maxlength: 255,
   },
-  tasks: [
-    {
-      type: taskSchema,
-      required: true,
-    },
-  ],
+  tasks: {
+    type: [Schema.Types.ObjectId],
+    ref: "Task",
+    required: true,
+    default: [],
+  },
   order: {
     type: Number,
     required: true,

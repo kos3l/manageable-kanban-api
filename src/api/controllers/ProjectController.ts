@@ -9,6 +9,9 @@ import projectService from "../services/ProjectService";
 import { conn } from "../../server";
 import teamService from "../services/TeamService";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
+import { ICreateModelDTO } from "../models/dtos/project/model/ICreateProjectModel";
+import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
+import projectValidation from "../validations/ProjectValidation";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -37,7 +40,7 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     return res.send(oneProject);
@@ -48,13 +51,13 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
 // MARK: project changes status once the first task is added
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
-  const newProject = req.body;
+  const newProject: ICreateProjectDTO = req.body;
   const userId = req.user!;
 
   const defaultColumns = ["Backlog", "To Do", "Doing", "Done"];
   const newColumnsArray = columnsService.createNewEmptyColumns(defaultColumns);
 
-  const newProjectDTO: ICreateProjectDTO = {
+  const newProjectDTO: ICreateModelDTO = {
     ...newProject,
     columns: newColumnsArray,
   };
@@ -87,7 +90,7 @@ const createNewProject = async (req: ExtendedRequest, res: Response) => {
       newProjectDTO.teamId,
       {
         projects: newProjectsArray,
-      },
+      } as IUpdateTeamModel,
       session
     );
 
@@ -110,7 +113,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
     const updatedProject = await projectService.updateOneProject(
@@ -141,13 +144,18 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
   const newColumnDto: ICreateColumnDTO = req.body;
 
   try {
+    const { error } = projectValidation.createNewColumnValidation(newColumnDto);
+    if (error) {
+      return res.status(500).send({ message: error.details[0].message });
+    }
+
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
-    const currentColumnsArray = oneProject[0].columns;
+    const currentColumnsArray = oneProject.columns;
     if (currentColumnsArray.length == 98) {
       return res.status(500).send({ message: "Can't add more columns!" });
     }
@@ -190,10 +198,10 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
 
-    const currentColumnsArray = oneProject[0].columns;
+    const currentColumnsArray = oneProject.columns;
     const newColumnsArray = currentColumnsArray.filter(
       (col) => !col._id.equals(columnId)
     );
@@ -234,7 +242,7 @@ const changeColumnOrderOnProject = async (
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
@@ -272,7 +280,7 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const updatedProject = await projectService.updateColumn(
       projectId,
@@ -305,7 +313,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
-      oneProject[0].teamId.toString()
+      oneProject.teamId.toString()
     );
     const deletedProject = await projectService.softDeleteOneProject(projectId);
     if (!deletedProject) {

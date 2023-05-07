@@ -1,7 +1,7 @@
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import mongoose from "mongoose";
 import { User } from "../models/schemas/UserSchema";
-import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
+import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 
 const createNewUser = async (user: ICreateUserDTO) => {
   const newUser = await User.create(user);
@@ -37,7 +37,7 @@ const getUserByRefreshToken = async (refreshToken: string) => {
 
 const updateUser = async (
   id: string,
-  userDto: IUpdateUserDTO,
+  userDto: IUpdateUserModel,
   session?: mongoose.mongo.ClientSession
 ) => {
   if (session) {
@@ -50,27 +50,56 @@ const updateUser = async (
 };
 
 const addTeamToUser = async (
-  id: string,
+  ids: string[],
   teamId: string,
   session?: mongoose.mongo.ClientSession
 ) => {
   const user = await User.updateOne(
-    { _id: id },
+    { _id: { $in: ids } },
     { $addToSet: { teams: teamId } },
     { session }
   );
   return user;
 };
 
-const removeTeamFromUser = async (
-  id: string,
-  teamId: string,
+const removeTeamsFromUser = async (
+  ids: string[],
+  teamIds: string[],
   session?: mongoose.mongo.ClientSession
 ) => {
-  const user = await User.updateOne(
-    { _id: id },
-    { $pull: { teams: teamId } },
-    { session }
+  const user = await User.updateMany(
+    { _id: { $in: ids } },
+    { $pull: { tasks: { $in: teamIds } } },
+    { session: session, multi: true }
+  );
+  return user;
+};
+
+const addTaskToUser = async (
+  id: string,
+  taskId: string,
+  isEmpty: boolean,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const mutation = isEmpty
+    ? {
+        $push: { tasks: taskId },
+      }
+    : { $addToSet: { tasks: taskId } };
+
+  const user = await User.updateOne({ _id: id }, mutation, { session });
+  return user;
+};
+
+const removeTasksFromUser = async (
+  ids: string[],
+  taskIds: string[],
+  session?: mongoose.mongo.ClientSession
+) => {
+  const user = await User.updateMany(
+    { _id: { $in: ids } },
+    { $pull: { tasks: { $in: taskIds } } },
+    { session: session, multi: true }
   );
   return user;
 };
@@ -82,7 +111,9 @@ const userService = {
   updateUser,
   getUserByRefreshToken,
   addTeamToUser,
-  removeTeamFromUser,
+  removeTeamsFromUser,
+  addTaskToUser,
+  removeTasksFromUser,
 };
 
 export default userService;

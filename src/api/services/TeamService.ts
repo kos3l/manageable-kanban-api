@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
-import { TeamDocument } from "../models/documents/TeamDocument";
-import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
-import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
+import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
+import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { Team } from "../models/schemas/TeamSchema";
 import teamValidation from "../validations/TeamValidation";
 import userService from "./UserService";
@@ -25,7 +24,7 @@ const getTeamById = async (userId: string, teamId: string) => {
 };
 
 const createNewTeam = async (
-  newTeam: ICreateTeamDTO,
+  newTeam: ICreateTeamModel,
   session?: mongoose.mongo.ClientSession
 ) => {
   const { error } = teamValidation.createTeamValidation(newTeam);
@@ -52,18 +51,10 @@ const createNewTeam = async (
 
 const updateOneTeam = async (
   id: string,
-  updatedTeam: IUpdateTeamDTO,
+  updatedTeam: IUpdateTeamModel,
   session?: mongoose.mongo.ClientSession
 ) => {
   if (session) {
-    const { error } = teamValidation.updateTeamMembersValidation(updatedTeam);
-    if (error) {
-      throw new Error(error.details[0].message);
-    }
-
-    const sanitisedUserIds = [...new Set(updatedTeam.users)];
-    updatedTeam.users = sanitisedUserIds;
-
     const team = await Team.findByIdAndUpdate(id, updatedTeam, { session });
     return team;
   } else {

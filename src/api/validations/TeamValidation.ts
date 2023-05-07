@@ -2,6 +2,8 @@ import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import Joi from "joi";
 import mongoose from "mongoose";
 import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
+import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
+import { IUpdateTeamProjectsDTO } from "../models/dtos/team/IUpdateTeamProjectsDTO";
 
 const createTeamValidation = (data: ICreateTeamDTO) => {
   const schema = Joi.object({
@@ -12,10 +14,22 @@ const createTeamValidation = (data: ICreateTeamDTO) => {
   return schema.validate(data);
 };
 
-const updateTeamMembersValidation = (data: IUpdateTeamDTO) => {
+const updateTeamValidation = (data: IUpdateTeamDTO) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255),
-    users: Joi.array<string>().min(1).max(20),
+  });
+  return schema.validate(data);
+};
+
+const updateTeamUsersValidation = (data: IUpdateTeamUsersDTO) => {
+  const schema = Joi.object({
+    users: Joi.array<string>().min(1).max(20).required(),
+  });
+  return schema.validate(data);
+};
+
+const updateTeamProjectsValidation = (data: IUpdateTeamProjectsDTO) => {
+  const schema = Joi.object({
     projects: Joi.array<string>().min(1).max(200),
   });
   return schema.validate(data);
@@ -23,6 +37,8 @@ const updateTeamMembersValidation = (data: IUpdateTeamDTO) => {
 
 const teamValidation = {
   createTeamValidation,
-  updateTeamMembersValidation,
+  updateTeamValidation,
+  updateTeamUsersValidation,
+  updateTeamProjectsValidation,
 };
 export default teamValidation;

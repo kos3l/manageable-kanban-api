@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
-import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { ICreateModelDTO } from "../models/dtos/project/model/ICreateProjectModel";
 import { IUpdateColumnOrderDTO } from "../models/dtos/project/IUpdateColumnOrderDTO";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
 import teamService from "./TeamService";
+import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -15,11 +16,11 @@ const getAllProjects = async (teamId: string) => {
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
-  return project;
+  return project[0];
 };
 
 const createNewProject = async (
-  projectDto: ICreateProjectDTO,
+  projectDto: ICreateModelDTO,
   session?: mongoose.mongo.ClientSession
 ) => {
   const { error } = projectValidation.createProjectValidation(projectDto);
@@ -147,6 +148,68 @@ const updateColumn = async (
   return updatedProject;
 };
 
+const addTaskToProjectColumn = async (
+  projectId: string,
+  taskId: mongoose.Types.ObjectId,
+  columnId: string,
+  isEmpty: boolean,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const mutation = isEmpty
+    ? {
+        $push: { "columns.$.tasks": taskId },
+      }
+    : {
+        $addToSet: {
+          "columns.$.tasks": taskId,
+        },
+      };
+
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": columnId,
+    },
+    mutation,
+    { session }
+  );
+  return updatedProject;
+};
+
+const removeTaskFromProjectColumn = async (
+  projectId: string,
+  taskId: mongoose.Types.ObjectId,
+  columnId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": columnId,
+    },
+    {
+      $pull: { "columns.$.tasks": taskId },
+    },
+    { session }
+  );
+  return updatedProject;
+};
+
+const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: newTaskDto.projectId,
+      "columns._id": newTaskDto.columnId,
+    },
+    {
+      $set: {
+        "columns.$.tasks": newTaskDto.tasks,
+      },
+    }
+  );
+  return updatedProject;
+};
+
 const verifyIfUserCanAccessTheProject = async (
   userId: string,
   teamId: string
@@ -177,6 +240,9 @@ const projectService = {
   verifyIfUserCanAccessTheProject,
   updateColumn,
   softDeleteOneProject,
+  addTaskToProjectColumn,
+  removeTaskFromProjectColumn,
+  updateColumnTaskOrder,
 };
 
 export default projectService;

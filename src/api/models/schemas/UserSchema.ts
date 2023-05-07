@@ -1,4 +1,4 @@
-import { Schema, model } from "mongoose";
+import { Schema, model, UpdateQuery } from "mongoose";
 import { UserDocument, UserMethods } from "../documents/UserDocument";
 import { UserModel } from "../types/UserModel";
 const bcrypt = require("bcrypt");
@@ -51,6 +51,12 @@ let userSchema = new Schema<UserDocument, UserModel, UserMethods>(
       required: true,
       default: [],
     },
+    tasks: {
+      type: [Schema.Types.ObjectId],
+      ref: "Task",
+      required: true,
+      default: [],
+    },
     refreshToken: {
       type: String,
       required: false,
@@ -79,5 +85,50 @@ userSchema.pre("save", async function (next) {
 userSchema.method("comparePassword", async function (password: string) {
   return bcrypt.compare(password, this.password);
 });
+
+userSchema.pre("updateOne", function (this: UpdateQuery<UserDocument>): void {
+  const update = this.getUpdate();
+  if (!update) {
+    return;
+  }
+  if (update.__v != null) {
+    delete update.__v;
+  }
+  const keys = ["$set", "$setOnInsert"];
+  for (const key of keys) {
+    if (update[key] != null && update[key].__v != null) {
+      delete update[key].__v;
+      if (Object.keys(update[key]).length === 0) {
+        delete update[key];
+      }
+    }
+  }
+  update.$inc = update.$inc || {};
+  update.$inc.__v = 1;
+});
+
+userSchema.pre(
+  "findOneAndUpdate",
+  function (this: UpdateQuery<UserDocument>): void {
+    const update = this.getUpdate();
+    if (!update) {
+      return;
+    }
+    if (update.__v != null) {
+      delete update.__v;
+    }
+    const keys = ["$set", "$setOnInsert"];
+    for (const key of keys) {
+      if (update[key] != null && update[key].__v != null) {
+        delete update[key].__v;
+        if (Object.keys(update[key]).length === 0) {
+          delete update[key];
+        }
+      }
+    }
+    update.$inc = update.$inc || {};
+    update.$inc.__v = 1;
+  }
+);
 
 export const User = model<UserDocument, UserModel>("user", userSchema);

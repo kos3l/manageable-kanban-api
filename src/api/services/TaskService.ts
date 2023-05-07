@@ -4,6 +4,7 @@ import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { Task } from "../models/schemas/TaskSchema";
+import labelValidation from "../validations/LabelValidation";
 import taskValidation from "../validations/TaskValidation";
 
 const getAllTasksByProjectId = async (projectId: string) => {
@@ -121,6 +122,11 @@ const addLabelToTask = async (
   isEmpty: boolean,
   labelDto: ICreateLabelDTO
 ) => {
+  const { error } = labelValidation.createLabelValidation(labelDto);
+  if (error) {
+    throw new Error(error.details[0].message);
+  }
+
   const mutation = isEmpty
     ? {
         $push: { labels: labelDto },

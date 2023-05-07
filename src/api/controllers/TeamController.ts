@@ -1,17 +1,14 @@
 import { Response } from "express";
-import mongoose from "mongoose";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { IUpdateTeamDTO } from "../models/dtos/team/IUpdateTeamDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import teamService from "../services/TeamService";
 import userService from "../services/UserService";
 import { conn } from "../../server";
-import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 import teamValidation from "../validations/TeamValidation";
-import projectService from "../services/ProjectService";
 import taskService from "../services/TaskService";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
@@ -37,25 +34,24 @@ const getTeamById = async (req: ExtendedRequest, res: Response) => {
 };
 
 const createNewTeam = async (req: ExtendedRequest, res: Response) => {
-  const newTeam: ICreateTeamDTO = req.body;
+  const newTeamDTO: ICreateTeamDTO = req.body;
   const userId = req.user!;
-  const newTeamDTO: ICreateTeamModel = {
-    ...newTeam,
-    createdBy: new mongoose.Types.ObjectId(userId),
-    users: [new mongoose.Types.ObjectId(userId)],
-  };
 
   const session = await conn.startSession();
   try {
     session.startTransaction();
 
-    const newTeam = await teamService.createNewTeam(newTeamDTO, session);
+    const newTeam = await teamService.createNewTeam(
+      newTeamDTO,
+      userId,
+      session
+    );
     const userToBeUpdated = await userService.getUserById(userId, session);
 
     if (!userToBeUpdated) {
       await session.abortTransaction();
       return res
-        .status(500)
+        .status(404)
         .send({ message: "Can't find the current logged in user!" });
     }
 
@@ -64,9 +60,13 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
         ? [...userToBeUpdated.teams, newTeam._id]
         : [newTeam._id];
 
-    await userService.updateUser(userId, {
-      teams: userToBeUpdated.teams,
-    } as IUpdateUserModel);
+    await userService.updateUser(
+      userId,
+      {
+        teams: userToBeUpdated.teams,
+      } as IUpdateUserModel,
+      null
+    );
 
     await session.commitTransaction();
     return res.send(newTeam);
@@ -85,12 +85,13 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
   try {
     const { error } = teamValidation.updateTeamValidation(data);
     if (error) {
-      return res.status(500).send({ message: error.details[0].message });
+      return res.status(400).send({ message: error.details[0].message });
     }
 
     const updatedTeam = await teamService.updateOneTeam(
       id,
-      data as IUpdateTeamModel
+      data as IUpdateTeamModel,
+      null
     );
 
     if (!updatedTeam) {
@@ -98,7 +99,7 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
         message: "Cannot update team with id=" + id + ". Team was not found",
       });
     } else {
-      return res.status(201).send({ message: "Team was succesfully updated." });
+      return res.status(204).send({ message: "Team was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -114,7 +115,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     session.startTransaction();
     const { error } = teamValidation.updateTeamUsersValidation(teamPayload);
     if (error) {
-      return res.status(500).send({ message: error.details[0].message });
+      return res.status(400).send({ message: error.details[0].message });
     }
     const sanitisedUserIds = [...new Set(teamPayload.users)];
     teamPayload.users = sanitisedUserIds;
@@ -145,7 +146,9 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       );
 
       if (isTeamCreatorRemoved) {
-        throw Error("Can't remove the team creator!");
+        return res.status(400).send({
+          message: "Can't remove the team creator!",
+        });
       }
 
       await userService.removeTeamsFromUser(
@@ -182,7 +185,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     }
 
     await session.commitTransaction();
-    return res.status(201).send({ message: "Team was succesfully updated." });
+    return res.status(204).send({ message: "Team was succesfully updated." });
   } catch (err: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: err.message });
@@ -202,7 +205,7 @@ const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
     });
   }
 
-  const loggedInUser = await userService.getUserById(userId);
+  const loggedInUser = await userService.getUserById(userId, null);
   if (
     loggedInUser?.teams.length == 1 &&
     loggedInUser?.teams.find((team) => team.equals(id))
@@ -220,7 +223,7 @@ const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
         message: "Cannot delete team with id=" + id + ". Team was not found",
       });
     } else {
-      return res.status(201).send({ message: "Team was succesfully deleted." });
+      return res.status(204).send({ message: "Team was succesfully deleted." });
     }
   } catch (err: any) {
     return res

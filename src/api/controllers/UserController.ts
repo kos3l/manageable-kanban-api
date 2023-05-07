@@ -1,5 +1,4 @@
 import { Response } from "express";
-import httpStatus from "http-status";
 import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import userService from "../services/UserService";
@@ -8,10 +7,7 @@ import userValidation from "../validations/UserValidation";
 const getUserById = async (req: ExtendedRequest, res: Response) => {
   try {
     const userId = req.params.id;
-    if (!userId) {
-      return res.status(401).send({ message: "Unauthorised" });
-    }
-    const user = await userService.getUserById(userId);
+    const user = await userService.getUserById(userId, null);
 
     return res.json(user);
   } catch (error: any) {
@@ -21,11 +17,8 @@ const getUserById = async (req: ExtendedRequest, res: Response) => {
 
 const getLoggedInUserProfile = async (req: ExtendedRequest, res: Response) => {
   try {
-    if (!req.user) {
-      return res.status(401).send({ message: "Unauthorised" });
-    }
-    const id = req.user;
-    const user = await userService.getUserById(id);
+    const id = req.user!;
+    const user = await userService.getUserById(id, null);
 
     return res.json(user);
   } catch (error: any) {
@@ -52,12 +45,12 @@ const updateOneUser = async (req: ExtendedRequest, res: Response) => {
     const { error } = userValidation.updateUserValidation(updatedUser);
 
     if (error) {
-      return res.status(500).send({ message: error.details[0].message });
+      return res.status(400).send({ message: error.details[0].message });
     }
 
-    await userService.updateUser(userId, updatedUser);
+    await userService.updateUser(userId, updatedUser, null);
 
-    return res.status(201).send({ message: "User was succesfully updated." });
+    return res.status(204).send({ message: "User was succesfully updated." });
   } catch (error: any) {
     return res.status(500).json(error);
   }

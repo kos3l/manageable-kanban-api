@@ -99,7 +99,7 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
         message: "Cannot update team with id=" + id + ". Team was not found",
       });
     } else {
-      return res.status(204).send({ message: "Team was succesfully updated." });
+      return res.status(200).send({ message: "Team was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -185,7 +185,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     }
 
     await session.commitTransaction();
-    return res.status(204).send({ message: "Team was succesfully updated." });
+    return res.status(200).send({ message: "Team was succesfully updated." });
   } catch (err: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: err.message });
@@ -223,7 +223,7 @@ const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
         message: "Cannot delete team with id=" + id + ". Team was not found",
       });
     } else {
-      return res.status(204).send({ message: "Team was succesfully deleted." });
+      return res.status(200).send({ message: "Team was succesfully deleted." });
     }
   } catch (err: any) {
     return res

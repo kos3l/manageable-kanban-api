@@ -125,7 +125,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Project's information was succesfully updated." });
     }
   } catch (err: any) {
@@ -177,7 +177,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
           ". Project was not found",
       });
     } else {
-      return res.status(204).send({ message: "Column was succesfully added." });
+      return res.status(200).send({ message: "Column was succesfully added." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -215,7 +215,7 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Column was succesfully deleted." });
     }
   } catch (err: any) {
@@ -255,7 +255,7 @@ const changeColumnOrderOnProject = async (
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Column Order was succesfully updated." });
     }
   } catch (err: any) {
@@ -291,7 +291,7 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Column's information was succesfully updated." });
     }
   } catch (err: any) {
@@ -319,7 +319,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Project was succesfully deleted." });
     }
   } catch (err: any) {

@@ -192,7 +192,7 @@ describe("Team workflow tests - Happy scenarios", () => {
               .send(updatedTeam)
               .end((err, res) => {
                 should().exist(res);
-                res.should.have.status(204);
+                res.should.have.status(200);
 
                 // Get team by id
                 agent
@@ -254,7 +254,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                   .send({ users: updatedTeamMembersArray })
                   .end((err, res) => {
                     should().exist(res);
-                    res.should.have.status(204);
+                    res.should.have.status(200);
 
                     // Get team by id
                     agent
@@ -339,7 +339,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                   .send({ users: updatedTeamMembersArray })
                   .end((err, res) => {
                     should().exist(res);
-                    res.should.have.status(204);
+                    res.should.have.status(200);
 
                     // Get team by id
                     agent
@@ -365,7 +365,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                           .send({ users: [user1Id] })
                           .end((err, res) => {
                             should().exist(res);
-                            res.should.have.status(204);
+                            res.should.have.status(200);
 
                             agent
                               .get("/api/team/" + teamId)
@@ -445,7 +445,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                       .set({ "auth-token": token })
                       .end((err, res) => {
                         should().exist(res);
-                        res.should.have.status(204);
+                        res.should.have.status(200);
 
                         agent
                           .get("/api/team")

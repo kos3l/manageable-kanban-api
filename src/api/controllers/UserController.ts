@@ -50,7 +50,7 @@ const updateOneUser = async (req: ExtendedRequest, res: Response) => {
 
     await userService.updateUser(userId, updatedUser, null);
 
-    return res.status(204).send({ message: "User was succesfully updated." });
+    return res.status(200).send({ message: "User was succesfully updated." });
   } catch (error: any) {
     return res.status(500).json(error);
   }

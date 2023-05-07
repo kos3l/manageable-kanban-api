@@ -135,7 +135,7 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Task's information was succesfully updated." });
     }
   } catch (err: any) {
@@ -197,7 +197,7 @@ const updateTasksOrderInColumn = async (
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Column task order was succesfully updated." });
     }
   } catch (err: any) {
@@ -257,7 +257,7 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Successfully added user to the task" });
     }
   } catch (err: any) {
@@ -313,7 +313,7 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "The user was removed from the task." });
     }
   } catch (err: any) {
@@ -357,7 +357,7 @@ const addLabelToTask = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Label was succesfully added to the task." });
     }
   } catch (err: any) {
@@ -389,7 +389,7 @@ const removeLabelFromTask = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(204)
+        .status(200)
         .send({ message: "Label was successfully removed from the task" });
     }
   } catch (err: any) {
@@ -433,7 +433,7 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
 
     await taskService.deleteOneTask(oneTask._id);
     await session.commitTransaction();
-    return res.status(204).send({ message: "Task was succesfully deleted." });
+    return res.status(200).send({ message: "Task was succesfully deleted." });
   } catch (err: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: err.message });

@@ -308,7 +308,7 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
-    await userService.removeTaskFromUser(payload.userId, taskId, session);
+    await userService.removeTasksFromUser([payload.userId], [taskId], session);
 
     await session.commitTransaction();
     if (!updatedTask) {
@@ -330,37 +330,47 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
 };
 
 const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
-  const projectId = req.params.projectId;
+  const taskId = req.params.taskId;
   const userId = req.user!;
-  // const data: IUpdateProjectDTO = req.body;
 
-  // try {
-  //   const oneProject = await projectService.getProjectById(projectId);
-  //   await projectService.verifyIfUserCanAccessTheProject(
-  //     userId,
-  //     oneProject[0].teamId.toString()
-  //   );
+  const session = await conn.startSession();
+  try {
+    session.startTransaction();
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
 
-  //   const updatedProject = await projectService.updateOneProject(
-  //     projectId,
-  //     data
-  //   );
+    //remove from user
+    if (oneTask.userIds && oneTask.userIds.length > 0) {
+      const allUsersOnTask = oneTask.userIds.map((id) => id.toString());
+      await userService.removeTasksFromUser(allUsersOnTask, [taskId], session);
+    }
 
-  //   if (!updatedProject) {
-  //     return res.status(404).send({
-  //       message:
-  //         "Cannot update project with id=" +
-  //         projectId +
-  //         ". Project was not found",
-  //     });
-  //   } else {
-  //     return res
-  //       .status(201)
-  //       .send({ message: "Project was succesfully updated." });
-  //   }
-  // } catch (err: any) {
-  //   return res.status(500).send({ message: err.message });
-  // }
+    //remove from project's column
+
+    // if (!updatedProject) {
+    //   return res.status(404).send({
+    //     message:
+    //       "Cannot update project with id=" +
+    //       projectId +
+    //       ". Project was not found",
+    //   });
+    // } else {
+    //   return res
+    //     .status(201)
+    //     .send({ message: "Project was succesfully updated." });
+    // }
+  } catch (err: any) {
+    await session.abortTransaction();
+    return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
+  }
 };
 
 const taskController = {

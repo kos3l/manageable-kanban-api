@@ -146,22 +146,20 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
         throw Error("Can't remove the team creator!");
       }
 
-      for (const id of removed) {
-        await userService.removeTeamFromUser(
-          id,
-          teamUpdateQueryResult.id,
-          session
-        );
-      }
+      // get removed user ids, remove this team from their teams property
+      // get all tasks they were assigned to in this team and remove them from it
+      await userService.removeTeamsFromUser(
+        removed,
+        teamUpdateQueryResult.id,
+        session
+      );
     }
 
     let addedUsers = teamPayload.users?.filter(
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );
     if (addedUsers && addedUsers.length > 0) {
-      for (const id of addedUsers) {
-        await userService.addTeamToUser(id, teamId, session);
-      }
+      await userService.addTeamToUser(addedUsers, teamId, session);
     }
 
     await session.commitTransaction();

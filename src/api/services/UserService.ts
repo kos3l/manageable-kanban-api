@@ -51,27 +51,27 @@ const updateUser = async (
 };
 
 const addTeamToUser = async (
-  id: string,
+  ids: string[],
   teamId: string,
   session?: mongoose.mongo.ClientSession
 ) => {
   const user = await User.updateOne(
-    { _id: id },
+    { _id: { $in: ids } },
     { $addToSet: { teams: teamId } },
     { session }
   );
   return user;
 };
 
-const removeTeamFromUser = async (
-  id: string,
-  teamId: string,
+const removeTeamsFromUser = async (
+  ids: string[],
+  teamIds: string[],
   session?: mongoose.mongo.ClientSession
 ) => {
-  const user = await User.updateOne(
-    { _id: id },
-    { $pull: { teams: teamId } },
-    { session }
+  const user = await User.updateMany(
+    { _id: { $in: ids } },
+    { $pull: { tasks: { $in: teamIds } } },
+    { session: session, multi: true }
   );
   return user;
 };
@@ -92,15 +92,15 @@ const addTaskToUser = async (
   return user;
 };
 
-const removeTaskFromUser = async (
-  id: string,
-  taskId: string,
+const removeTasksFromUser = async (
+  ids: string[],
+  taskIds: string[],
   session?: mongoose.mongo.ClientSession
 ) => {
-  const user = await User.updateOne(
-    { _id: id },
-    { $pull: { tasks: taskId } },
-    { session }
+  const user = await User.updateMany(
+    { _id: { $in: ids } },
+    { $pull: { tasks: { $in: taskIds } } },
+    { session: session, multi: true }
   );
   return user;
 };
@@ -112,9 +112,9 @@ const userService = {
   updateUser,
   getUserByRefreshToken,
   addTeamToUser,
-  removeTeamFromUser,
+  removeTeamsFromUser,
   addTaskToUser,
-  removeTaskFromUser,
+  removeTasksFromUser,
 };
 
 export default userService;

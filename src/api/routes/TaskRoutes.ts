@@ -3,7 +3,7 @@ import taskController from "../controllers/TaskController";
 const router = express.Router();
 
 // RETHINK labels!!
-// assign task to user!!!
+// delete project
 
 // route: /api/task/project/:projectId
 router.get("/project/:projectId", taskController.getAllTasksByProjectId);
@@ -26,7 +26,7 @@ router.put("/column/order", taskController.updateTasksOrderInColumn);
 // route: /api/task/:taskId/AddUser
 router.put("/:taskId/AddUser", taskController.addUserToTask);
 
-// remove users from task
+// route: /api/task/:taskId/RemoveUser
 router.put("/:taskId/RemoveUser", taskController.removeUserFromTask);
 
 // route: /api/task/:taskId

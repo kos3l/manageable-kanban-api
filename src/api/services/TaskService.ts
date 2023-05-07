@@ -116,6 +116,14 @@ const removeUsersByProjectIds = async (
   return updatedTask;
 };
 
+const deleteOneTask = async (
+  taskId: mongoose.Types.ObjectId,
+  session: mongoose.mongo.ClientSession
+) => {
+  const deleted = await Task.deleteOne({ _id: taskId });
+  return deleted;
+};
+
 const taskService = {
   getAllTasksByProjectId,
   createOneTask,
@@ -126,6 +134,7 @@ const taskService = {
   updateTaskByRemovingUser,
   getAllTasksForAUserByProject,
   removeUsersByProjectIds,
+  deleteOneTask,
 };
 
 export default taskService;

@@ -348,23 +348,24 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
     //remove from user
     if (oneTask.userIds && oneTask.userIds.length > 0) {
       const allUsersOnTask = oneTask.userIds.map((id) => id.toString());
-      await userService.removeTasksFromUser(allUsersOnTask, [taskId], session);
+      await userService.removeTasksFromUser(
+        allUsersOnTask,
+        [oneTask.id.toString()],
+        session
+      );
     }
 
     //remove from project's column
+    await projectService.removeTaskFromProjectColumn(
+      oneProject.id.toString(),
+      oneTask.id,
+      oneTask.columnId.toString(),
+      session
+    );
 
-    // if (!updatedProject) {
-    //   return res.status(404).send({
-    //     message:
-    //       "Cannot update project with id=" +
-    //       projectId +
-    //       ". Project was not found",
-    //   });
-    // } else {
-    //   return res
-    //     .status(201)
-    //     .send({ message: "Project was succesfully updated." });
-    // }
+    await taskService.deleteOneTask(oneTask._id, session);
+    await session.commitTransaction();
+    return res.status(200).send({ message: "Task was succesfully deleted." });
   } catch (err: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: err.message });

@@ -176,6 +176,25 @@ const addTaskToProjectColumn = async (
   return updatedProject;
 };
 
+const removeTaskFromProjectColumn = async (
+  projectId: string,
+  taskId: mongoose.Types.ObjectId,
+  columnId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+      "columns._id": columnId,
+    },
+    {
+      $pull: { "columns.$.tasks": taskId },
+    },
+    { session }
+  );
+  return updatedProject;
+};
+
 const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
   const updatedProject = await Project.updateOne(
     {
@@ -222,6 +241,7 @@ const projectService = {
   updateColumn,
   softDeleteOneProject,
   addTaskToProjectColumn,
+  removeTaskFromProjectColumn,
   updateColumnTaskOrder,
 };
 

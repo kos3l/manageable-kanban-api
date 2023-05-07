@@ -8,10 +8,10 @@ import { conn } from "../../server";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
-import mongoose from "mongoose";
 import projectValidation from "../validations/ProjectValidation";
 import { IUpdateUserToTask } from "../models/dtos/task/IUpdateUserToTask";
 import userService from "../services/UserService";
+import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -133,9 +133,9 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const updatedProject = await taskService.updateOneTask(taskId, data);
+    const updatedTask = await taskService.updateOneTask(taskId, data);
 
-    if (!updatedProject) {
+    if (!updatedTask) {
       return res.status(404).send({
         message:
           "Cannot update task with id=" + taskId + ". Task was not found",
@@ -329,6 +329,75 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const addLabelToTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+  const data: ICreateLabelDTO = req.body;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    let isLabelArrayEmpty = false;
+    if (oneTask.labels) {
+      isLabelArrayEmpty = oneTask.labels.length == 0;
+    }
+
+    const updatedTask = await taskService.addLabelToTask(
+      taskId,
+      isLabelArrayEmpty,
+      data
+    );
+
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update task with id=" + taskId + ". Task was not found",
+      });
+    } else {
+      return res.status(201).send({ message: "Task was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+const removeLabelFromTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const labelId = req.params.labelId;
+  const userId = req.user!;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    const updatedTask = await taskService.removeLabelFromTask(taskId, labelId);
+
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update task with id=" + taskId + ". Task was not found",
+      });
+    } else {
+      return res.status(201).send({ message: "Task was succesfully updated." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
   const taskId = req.params.taskId;
   const userId = req.user!;
@@ -363,7 +432,7 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
-    await taskService.deleteOneTask(oneTask._id, session);
+    await taskService.deleteOneTask(oneTask._id);
     await session.commitTransaction();
     return res.status(200).send({ message: "Task was succesfully deleted." });
   } catch (err: any) {
@@ -384,6 +453,8 @@ const taskController = {
   deleteOneTask,
   addUserToTask,
   removeUserFromTask,
+  removeLabelFromTask,
+  addLabelToTask,
 };
 
 export default taskController;

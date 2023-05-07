@@ -19,6 +19,17 @@ const getAllTasksByColumn = async (getTaskDto: IGetTasksByColumnDTO) => {
   return allTasks;
 };
 
+const getAllTasksForAUserByProject = async (
+  projectId: string,
+  userId: string
+) => {
+  const allTasks = await Task.find({
+    projectId: projectId,
+    userIds: { $elemMatch: userId },
+  });
+  return allTasks;
+};
+
 const getOneTaskById = async (taskId: string) => {
   const oneTask = await Task.find({
     _id: taskId,
@@ -89,6 +100,22 @@ const updateTaskByRemovingUser = async (
   return updatedTask;
 };
 
+const removeUsersByProjectIds = async (
+  projectIds: string[],
+  userIds: string[],
+  session?: mongoose.mongo.ClientSession
+) => {
+  const updatedTask = await Task.updateMany(
+    {
+      projectId: { $in: projectIds },
+    },
+    { $pull: { userIds: { $in: userIds } } },
+    { session: session, multi: true }
+  );
+
+  return updatedTask;
+};
+
 const taskService = {
   getAllTasksByProjectId,
   createOneTask,
@@ -97,6 +124,8 @@ const taskService = {
   updateOneTask,
   updateTaskByAddingUser,
   updateTaskByRemovingUser,
+  getAllTasksForAUserByProject,
+  removeUsersByProjectIds,
 };
 
 export default taskService;

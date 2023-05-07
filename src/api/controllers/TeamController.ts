@@ -11,6 +11,8 @@ import { IUpdateTeamUsersDTO } from "../models/dtos/team/IUpdateTeamUsersDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 import teamValidation from "../validations/TeamValidation";
+import projectService from "../services/ProjectService";
+import taskService from "../services/TaskService";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
   const id = req.user!;
@@ -146,13 +148,24 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
         throw Error("Can't remove the team creator!");
       }
 
-      // get removed user ids, remove this team from their teams property
-      // get all tasks they were assigned to in this team and remove them from it
       await userService.removeTeamsFromUser(
         removed,
-        teamUpdateQueryResult.id,
+        [teamUpdateQueryResult.id],
         session
       );
+
+      const teamsProjects = teamUpdateQueryResult.projects?.map((project) =>
+        project.toString()
+      );
+
+      if (teamsProjects && removed) {
+        await taskService.removeUsersByProjectIds(
+          teamsProjects,
+          removed,
+          session
+        );
+        await userService.removeTasksFromUser(teamsProjects, removed, session);
+      }
     }
 
     let addedUsers = teamPayload.users?.filter(

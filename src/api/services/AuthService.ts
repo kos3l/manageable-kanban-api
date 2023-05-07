@@ -1,7 +1,5 @@
 import userService from "../services/UserService";
 import authValidation from "../validations/AuthValidation";
-const ApiError = require("../utils/ApiError");
-const httpStatus = require("http-status");
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import { ICreateLoginDTO } from "../models/dtos/user/ICreateLoginDTO";
 

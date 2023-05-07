@@ -1,6 +1,5 @@
 import { Response } from "express";
 import { ICreateTaskDTO } from "../models/dtos/task/ICreateTaskDTO";
-import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import projectService from "../services/ProjectService";
 import taskService from "../services/TaskService";
@@ -8,10 +7,10 @@ import { conn } from "../../server";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
-import mongoose from "mongoose";
 import projectValidation from "../validations/ProjectValidation";
 import { IUpdateUserToTask } from "../models/dtos/task/IUpdateUserToTask";
 import userService from "../services/UserService";
+import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -83,18 +82,12 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const taskDto: ICreateTaskModel = {
-      ...payload,
-      projectId: projectId,
-    };
-
-    const createdTask = await taskService.createOneTask(taskDto);
+    const createdTask = await taskService.createOneTask(payload, projectId);
     const columnToBeUpdated = oneProject.columns.find((col) => {
       createdTask.columnId == col._id;
     });
 
     let isTasksArrayEmpty = false;
-
     if (columnToBeUpdated && columnToBeUpdated.tasks) {
       if (columnToBeUpdated.tasks.length > 0) {
         isTasksArrayEmpty = true;
@@ -133,15 +126,17 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const updatedProject = await taskService.updateOneTask(taskId, data);
+    const updatedTask = await taskService.updateOneTask(taskId, data);
 
-    if (!updatedProject) {
+    if (!updatedTask) {
       return res.status(404).send({
         message:
           "Cannot update task with id=" + taskId + ". Task was not found",
       });
     } else {
-      return res.status(201).send({ message: "Task was succesfully updated." });
+      return res
+        .status(200)
+        .send({ message: "Task's information was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -170,7 +165,7 @@ const updateTasksOrderInColumn = async (
     );
 
     if (columnBeforeUpdate == undefined) {
-      return res.status(500).send({ message: "No column found" });
+      return res.status(404).send({ message: "No column found" });
     }
     const tasksAsObjectIds = columnBeforeUpdate.tasks.map((task) =>
       task.toString()
@@ -185,7 +180,7 @@ const updateTasksOrderInColumn = async (
       data.tasks.every((item) => set1.has(item));
 
     if (!taskArrayHasAllElements) {
-      return res.status(500).send({
+      return res.status(400).send({
         message: "The tasks from request are different from the original ones",
       });
     }
@@ -202,7 +197,7 @@ const updateTasksOrderInColumn = async (
       });
     } else {
       return res
-        .status(201)
+        .status(200)
         .send({ message: "Column task order was succesfully updated." });
     }
   } catch (err: any) {
@@ -258,12 +253,12 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
     if (!updatedTask) {
       return res.status(404).send({
         message:
-          "Cannot update column with id=" + taskId + ". Column was not found",
+          "Cannot update task with id=" + taskId + ". Task was not found",
       });
     } else {
       return res
-        .status(201)
-        .send({ message: "Column task order was succesfully updated." });
+        .status(200)
+        .send({ message: "Successfully added user to the task" });
     }
   } catch (err: any) {
     await session.abortTransaction();
@@ -288,7 +283,7 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
 
     if (oneTask.userIds?.length == 0) {
       return res
-        .status(500)
+        .status(400)
         .send({ message: "There are no users assigned to this task already" });
     }
 
@@ -314,18 +309,91 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
     if (!updatedTask) {
       return res.status(404).send({
         message:
-          "Cannot update column with id=" + taskId + ". Column was not found",
+          "Cannot update task with id=" + taskId + ". Task was not found",
       });
     } else {
       return res
-        .status(201)
-        .send({ message: "Column task order was succesfully updated." });
+        .status(200)
+        .send({ message: "The user was removed from the task." });
     }
   } catch (err: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: err.message });
   } finally {
     session.endSession();
+  }
+};
+
+const addLabelToTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+  const data: ICreateLabelDTO = req.body;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    let isLabelArrayEmpty = false;
+    if (oneTask.labels) {
+      isLabelArrayEmpty = oneTask.labels.length == 0;
+    }
+
+    const updatedTask = await taskService.addLabelToTask(
+      taskId,
+      isLabelArrayEmpty,
+      data
+    );
+
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update task with id=" + taskId + ". Task was not found",
+      });
+    } else {
+      return res
+        .status(200)
+        .send({ message: "Label was succesfully added to the task." });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
+const removeLabelFromTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const labelId = req.params.labelId;
+  const userId = req.user!;
+
+  try {
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    const updatedTask = await taskService.removeLabelFromTask(taskId, labelId);
+
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update task with id=" + taskId + ". Task was not found",
+      });
+    } else {
+      return res
+        .status(200)
+        .send({ message: "Label was successfully removed from the task" });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
   }
 };
 
@@ -363,7 +431,7 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
-    await taskService.deleteOneTask(oneTask._id, session);
+    await taskService.deleteOneTask(oneTask._id);
     await session.commitTransaction();
     return res.status(200).send({ message: "Task was succesfully deleted." });
   } catch (err: any) {
@@ -384,6 +452,8 @@ const taskController = {
   deleteOneTask,
   addUserToTask,
   removeUserFromTask,
+  removeLabelFromTask,
+  addLabelToTask,
 };
 
 export default taskController;

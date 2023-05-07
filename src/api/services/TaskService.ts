@@ -20,12 +20,12 @@ const getAllTasksByColumn = async (getTaskDto: IGetTasksByColumnDTO) => {
 };
 
 const getAllTasksForAUserByProject = async (
-  projectId: string,
-  userId: string
+  projectIds: string[],
+  userIds: string[]
 ) => {
   const allTasks = await Task.find({
-    projectId: projectId,
-    userIds: { $elemMatch: userId },
+    projectId: { $in: projectIds },
+    userIds: { $elemMatch: { $in: userIds } },
   });
   return allTasks;
 };

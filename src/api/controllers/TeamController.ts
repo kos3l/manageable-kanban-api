@@ -134,7 +134,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       });
     }
 
-    // remove users from tasks!!
+    // Removing Users Section - Clean up and updating other entities like tasks and users
     let removedUsers = membersBeforeUpdate?.filter(
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
@@ -159,15 +159,21 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
       );
 
       if (teamsProjects && removed) {
+        const allTasks = await taskService.getAllTasksForAUserByProject(
+          teamsProjects,
+          removed
+        );
+        const ids = allTasks.map((task) => task.id.toString());
         await taskService.removeUsersByProjectIds(
           teamsProjects,
           removed,
           session
         );
-        await userService.removeTasksFromUser(teamsProjects, removed, session);
+        await userService.removeTasksFromUser(removed, ids, session);
       }
     }
 
+    // Add users section
     let addedUsers = teamPayload.users?.filter(
       (userId) => !membersBeforeUpdate?.find((user) => user.equals(userId))
     );

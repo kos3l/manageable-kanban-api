@@ -1,7 +1,6 @@
 import { ICreateUserDTO } from "../models/dtos/user/ICreateUserDTO";
 import mongoose from "mongoose";
 import { User } from "../models/schemas/UserSchema";
-import { IUpdateUserDTO } from "../models/dtos/user/IUpdateUserDTO";
 import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 
 const createNewUser = async (user: ICreateUserDTO) => {

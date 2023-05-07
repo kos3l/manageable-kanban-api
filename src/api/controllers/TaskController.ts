@@ -235,7 +235,7 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
 
     let isUserIdsArrayEmpty = false;
     if (oneTask.userIds) {
-      if (oneTask.userIds.length > 0) {
+      if (oneTask.userIds.length == 0) {
         isUserIdsArrayEmpty = true;
       }
     }
@@ -253,6 +253,62 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
       isUserIdsArrayEmpty,
       session
     );
+
+    await session.commitTransaction();
+    if (!updatedTask) {
+      return res.status(404).send({
+        message:
+          "Cannot update column with id=" + taskId + ". Column was not found",
+      });
+    } else {
+      return res
+        .status(201)
+        .send({ message: "Column task order was succesfully updated." });
+    }
+  } catch (err: any) {
+    await session.abortTransaction();
+    return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
+  }
+};
+
+const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
+  const taskId = req.params.taskId;
+  const userId = req.user!;
+  let payload: IUpdateUserToTask = req.body;
+
+  const session = await conn.startSession();
+  try {
+    session.startTransaction();
+    const oneTask = await taskService.getOneTaskById(taskId);
+    const oneProject = await projectService.getProjectById(
+      oneTask.projectId.toString()
+    );
+
+    if (oneTask.userIds?.length == 0) {
+      return res
+        .status(500)
+        .send({ message: "There are no users assigned to this task already" });
+    }
+
+    // check if both logged in user and user to be removed belong to the team
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+    await projectService.verifyIfUserCanAccessTheProject(
+      payload.userId,
+      oneProject.teamId.toString()
+    );
+
+    const updatedTask = await taskService.updateTaskByRemovingUser(
+      taskId,
+      payload.userId,
+      session
+    );
+
+    await userService.removeTaskFromUser(payload.userId, taskId, session);
 
     await session.commitTransaction();
     if (!updatedTask) {
@@ -316,6 +372,7 @@ const taskController = {
   updateTasksOrderInColumn,
   deleteOneTask,
   addUserToTask,
+  removeUserFromTask,
 };
 
 export default taskController;

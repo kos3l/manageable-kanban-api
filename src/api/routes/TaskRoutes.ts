@@ -23,10 +23,11 @@ router.put("/:taskId", taskController.updateOneTask);
 // route: /api/task/column/order
 router.put("/column/order", taskController.updateTasksOrderInColumn);
 
-// add users to task
+// route: /api/task/:taskId/AddUser
 router.put("/:taskId/AddUser", taskController.addUserToTask);
 
 // remove users from task
+router.put("/:taskId/RemoveUser", taskController.removeUserFromTask);
 
 // route: /api/task/:taskId
 router.delete("/:taskId", taskController.deleteOneTask);

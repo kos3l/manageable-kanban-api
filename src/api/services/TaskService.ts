@@ -73,6 +73,22 @@ const updateTaskByAddingUser = async (
   return updatedTask;
 };
 
+const updateTaskByRemovingUser = async (
+  taskId: string,
+  userId: string,
+  session?: mongoose.mongo.ClientSession
+) => {
+  const updatedTask = await Task.updateOne(
+    {
+      _id: taskId,
+    },
+    { $pull: { userIds: userId } },
+    { session }
+  );
+
+  return updatedTask;
+};
+
 const taskService = {
   getAllTasksByProjectId,
   createOneTask,
@@ -80,6 +96,7 @@ const taskService = {
   getOneTaskById,
   updateOneTask,
   updateTaskByAddingUser,
+  updateTaskByRemovingUser,
 };
 
 export default taskService;

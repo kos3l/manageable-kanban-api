@@ -25,7 +25,6 @@ const getLoggedInUserProfile = async (req: ExtendedRequest, res: Response) => {
       return res.status(401).send({ message: "Unauthorised" });
     }
     const id = req.user;
-
     const user = await userService.getUserById(id);
 
     return res.json(user);
@@ -49,12 +48,11 @@ const updateOneUser = async (req: ExtendedRequest, res: Response) => {
   try {
     const userId = req.params.id;
     let updatedUser: IUpdateUserDTO = req.body;
-    delete updatedUser.teams;
 
     const { error } = userValidation.updateUserValidation(updatedUser);
 
     if (error) {
-      throw new Error(error.details[0].message);
+      return res.status(500).send({ message: error.details[0].message });
     }
 
     await userService.updateUser(userId, updatedUser);

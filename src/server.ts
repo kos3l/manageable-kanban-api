@@ -8,6 +8,7 @@ import userRoutes from "./api/routes/UserRoutes";
 import teamRoutes from "./api/routes/TeamRoutes";
 import tokenRoutes from "./api/routes/TokenRoutes";
 import projectRoutes from "./api/routes/ProjectRoutes";
+import taskRoutes from "./api/routes/TaskRoutes";
 import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
@@ -41,6 +42,7 @@ app.use("/api/token", tokenRoutes);
 app.use("/api/user", verifyToken, userRoutes);
 app.use("/api/team", verifyToken, teamRoutes);
 app.use("/api/project", verifyToken, projectRoutes);
+app.use("/api/task", verifyToken, taskRoutes);
 
 mongoose
   .connect(process.env.DBHOST!)

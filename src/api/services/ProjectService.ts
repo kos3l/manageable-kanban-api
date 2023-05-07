@@ -8,6 +8,7 @@ import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
 import teamService from "./TeamService";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
+import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -20,28 +21,30 @@ const getProjectById = async (projectId: string) => {
 };
 
 const createNewProject = async (
-  projectDto: ICreateModelDTO,
-  session?: mongoose.mongo.ClientSession
+  projectDto: ICreateProjectDTO,
+  newColumns: ColumnDocument[],
+  session: mongoose.mongo.ClientSession | null
 ) => {
-  const { error } = projectValidation.createProjectValidation(projectDto);
+  const newProjectDTO: ICreateModelDTO = {
+    ...projectDto,
+    columns: newColumns,
+  };
+
+  const { error } = projectValidation.createProjectValidation(newProjectDTO);
   if (error) {
-    // fix this to actually work the status code
     throw new Error(error.details[0].message);
   }
 
-  if (session) {
-    const createdProject = await Project.create([projectDto], { session });
-    return createdProject[0];
-  } else {
-    const createdProject = await Project.create(projectDto);
-    return createdProject;
-  }
+  const createdProject = await Project.create([newProjectDTO], {
+    session: session,
+  });
+  return createdProject[0];
 };
 
 const updateOneProject = async (
   id: string,
   projectDto: IUpdateProjectDTO,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const { error } = projectValidation.updateProjectValidation(projectDto);
   if (error) {
@@ -72,7 +75,7 @@ const updateProjectColumns = async (
 const updateOneColumnOrder = async (
   projectId: string,
   updatedColumn: IUpdateColumnOrderDTO,
-  session: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const { error } = projectValidation.updateProjectColumnsOrder(updatedColumn);
   if (error) {
@@ -153,7 +156,7 @@ const addTaskToProjectColumn = async (
   taskId: mongoose.Types.ObjectId,
   columnId: string,
   isEmpty: boolean,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const mutation = isEmpty
     ? {
@@ -180,7 +183,7 @@ const removeTaskFromProjectColumn = async (
   projectId: string,
   taskId: mongoose.Types.ObjectId,
   columnId: string,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const updatedProject = await Project.updateOne(
     {

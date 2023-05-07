@@ -4,7 +4,6 @@ import { Response } from "express";
 import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import teamService from "../services/TeamService";
 import mongoose from "mongoose";
-import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { conn } from "../../server";
 import userService from "../services/UserService";
 import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
@@ -12,7 +11,6 @@ import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 
 const register = async (req: ExtendedRequest, res: Response) => {
   const session = await conn.startSession();
-  // add a dto
   try {
     session.startTransaction();
 
@@ -23,7 +21,11 @@ const register = async (req: ExtendedRequest, res: Response) => {
       users: [new mongoose.Types.ObjectId(savedUser.id)],
     };
 
-    const firstTeam = await teamService.createNewTeam(teamData, session);
+    const firstTeam = await teamService.createNewTeam(
+      teamData,
+      savedUser.id,
+      session
+    );
 
     const updatedUser: IUpdateUserModel = {
       firstName: savedUser.firstName,
@@ -32,7 +34,7 @@ const register = async (req: ExtendedRequest, res: Response) => {
       teams: [firstTeam._id],
     };
 
-    await userService.updateUser(savedUser.id, updatedUser);
+    await userService.updateUser(savedUser.id, updatedUser, null);
 
     await session.commitTransaction();
     return res.json({ error: null, data: [savedUser._id, firstTeam._id] });
@@ -46,7 +48,6 @@ const register = async (req: ExtendedRequest, res: Response) => {
 
 const login = async (req: ExtendedRequest, res: Response) => {
   try {
-    // add a dto
     const loggedInUser = await authService.login(req.body);
 
     const username: string =
@@ -60,14 +61,17 @@ const login = async (req: ExtendedRequest, res: Response) => {
     const accessToken = tokens[0];
     const refreshToken = tokens[1];
 
-    userService.updateUser(loggedInUser.id, {
-      refreshToken: refreshToken,
-    });
+    userService.updateUser(
+      loggedInUser.id,
+      {
+        refreshToken: refreshToken,
+      },
+      null
+    );
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       sameSite: "none",
-      //issues on local host it needs to be false for postman to work, shoold be false in dev
       secure: true,
       maxAge: 24 * 60 * 60 * 1000,
       domain: process.env.API_DOMAIN,
@@ -97,9 +101,13 @@ const logout = async (req: ExtendedRequest, res: Response) => {
       return res.sendStatus(204);
     }
 
-    await userService.updateUser(userWithThisRefreshToken.id, {
-      refreshToken: "",
-    });
+    await userService.updateUser(
+      userWithThisRefreshToken.id,
+      {
+        refreshToken: "",
+      },
+      null
+    );
     res.clearCookie("jwt", {
       httpOnly: true,
       secure: true,

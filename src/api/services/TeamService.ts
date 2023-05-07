@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
+import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { Team } from "../models/schemas/TeamSchema";
 import teamValidation from "../validations/TeamValidation";
 import userService from "./UserService";
-const httpStatus = require("http-status");
 
 const getAllTeams = async (userId: string) => {
   const allTeams = await Team.find({ createdBy: userId });
@@ -24,27 +24,34 @@ const getTeamById = async (userId: string, teamId: string) => {
 };
 
 const createNewTeam = async (
-  newTeam: ICreateTeamModel,
+  newTeam: ICreateTeamDTO,
+  userId: string,
   session?: mongoose.mongo.ClientSession
 ) => {
-  const { error } = teamValidation.createTeamValidation(newTeam);
+  const newTeamDTO: ICreateTeamModel = {
+    ...newTeam,
+    createdBy: new mongoose.Types.ObjectId(userId),
+    users: [new mongoose.Types.ObjectId(userId)],
+  };
+
+  const { error } = teamValidation.createTeamValidation(newTeamDTO);
   if (error) {
-    // fix this to actually work the status code
     throw new Error(error.details[0].message);
   }
 
   const userExists = await userService.getUserById(
-    newTeam.createdBy.toString()
+    newTeamDTO.createdBy.toString(),
+    null
   );
   if (!userExists) {
     throw new Error("User does not exist!");
   }
 
   if (session) {
-    const createdTeam = await Team.create([newTeam], { session });
+    const createdTeam = await Team.create([newTeamDTO], { session });
     return createdTeam[0];
   } else {
-    const createdTeam = await Team.create(newTeam);
+    const createdTeam = await Team.create(newTeamDTO);
     return createdTeam;
   }
 };
@@ -52,15 +59,12 @@ const createNewTeam = async (
 const updateOneTeam = async (
   id: string,
   updatedTeam: IUpdateTeamModel,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
-  if (session) {
-    const team = await Team.findByIdAndUpdate(id, updatedTeam, { session });
-    return team;
-  } else {
-    const team = await Team.findByIdAndUpdate(id, updatedTeam);
-    return team;
-  }
+  const team = await Team.findByIdAndUpdate(id, updatedTeam, {
+    session: session,
+  });
+  return team;
 };
 
 const softDeleteOneTeam = async (id: string) => {

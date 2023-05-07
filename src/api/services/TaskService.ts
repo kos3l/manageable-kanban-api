@@ -1,9 +1,11 @@
 import mongoose from "mongoose";
+import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
+import { ICreateTaskDTO } from "../models/dtos/task/ICreateTaskDTO";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
-import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { Task } from "../models/schemas/TaskSchema";
+import labelValidation from "../validations/LabelValidation";
 import taskValidation from "../validations/TaskValidation";
 
 const getAllTasksByProjectId = async (projectId: string) => {
@@ -37,13 +39,18 @@ const getOneTaskById = async (taskId: string) => {
   return oneTask[0];
 };
 
-const createOneTask = async (taskDto: ICreateTaskModel) => {
-  const { error } = taskValidation.createTaskValidation(taskDto);
+const createOneTask = async (taskDto: ICreateTaskDTO, projectId: string) => {
+  const newTask: ICreateTaskModel = {
+    ...taskDto,
+    projectId: projectId,
+  };
+
+  const { error } = taskValidation.createTaskValidation(newTask);
   if (error) {
     throw new Error(error.details[0].message);
   }
 
-  const allTasks = await Task.create(taskDto);
+  const allTasks = await Task.create(newTask);
   return allTasks;
 };
 
@@ -61,7 +68,7 @@ const updateTaskByAddingUser = async (
   taskId: string,
   userId: string,
   isEmpty: boolean,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const mutation = isEmpty
     ? {
@@ -87,7 +94,7 @@ const updateTaskByAddingUser = async (
 const updateTaskByRemovingUser = async (
   taskId: string,
   userId: string,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const updatedTask = await Task.updateOne(
     {
@@ -103,7 +110,7 @@ const updateTaskByRemovingUser = async (
 const removeUsersByProjectIds = async (
   projectIds: string[],
   userIds: string[],
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const updatedTask = await Task.updateMany(
     {
@@ -116,10 +123,50 @@ const removeUsersByProjectIds = async (
   return updatedTask;
 };
 
-const deleteOneTask = async (
-  taskId: mongoose.Types.ObjectId,
-  session: mongoose.mongo.ClientSession
+const addLabelToTask = async (
+  taskId: string,
+  isEmpty: boolean,
+  labelDto: ICreateLabelDTO
 ) => {
+  const { error } = labelValidation.createLabelValidation(labelDto);
+  if (error) {
+    throw new Error(error.details[0].message);
+  }
+
+  const mutation = isEmpty
+    ? {
+        $push: { labels: labelDto },
+      }
+    : {
+        $addToSet: {
+          labels: labelDto,
+        },
+      };
+
+  const updatedTask = await Task.updateOne(
+    {
+      _id: taskId,
+    },
+    mutation
+  );
+  return updatedTask;
+};
+
+const removeLabelFromTask = async (taskId: string, labelId: string) => {
+  const updatedTask = await Task.updateOne(
+    {
+      _id: taskId,
+    },
+    {
+      $pull: {
+        labels: { _id: labelId },
+      },
+    }
+  );
+  return updatedTask;
+};
+
+const deleteOneTask = async (taskId: mongoose.Types.ObjectId) => {
   const deleted = await Task.deleteOne({ _id: taskId });
   return deleted;
 };
@@ -134,6 +181,8 @@ const taskService = {
   updateTaskByRemovingUser,
   getAllTasksForAUserByProject,
   removeUsersByProjectIds,
+  addLabelToTask,
+  removeLabelFromTask,
   deleteOneTask,
 };
 

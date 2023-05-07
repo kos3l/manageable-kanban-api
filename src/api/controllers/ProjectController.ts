@@ -9,7 +9,6 @@ import projectService from "../services/ProjectService";
 import { conn } from "../../server";
 import teamService from "../services/TeamService";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
-import { ICreateModelDTO } from "../models/dtos/project/model/ICreateProjectModel";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 
@@ -20,7 +19,7 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   try {
     const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
     if (isUserInTheTeam == null) {
-      return res.status(500).send({
+      return res.status(400).send({
         message:
           "The user needs to be a part of the team to preview it's projects",
       });
@@ -51,22 +50,19 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
 // MARK: project changes status once the first task is added
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
-  const newProject: ICreateProjectDTO = req.body;
+  const newProjectDTO: ICreateProjectDTO = req.body;
   const userId = req.user!;
 
   const defaultColumns = ["Backlog", "To Do", "Doing", "Done"];
   const newColumnsArray = columnsService.createNewEmptyColumns(defaultColumns);
 
-  const newProjectDTO: ICreateModelDTO = {
-    ...newProject,
-    columns: newColumnsArray,
-  };
   const session = await conn.startSession();
   try {
     session.startTransaction();
 
     const newProject = await projectService.createNewProject(
       newProjectDTO,
+      newColumnsArray,
       session
     );
     const teamToBeUpdated = await teamService.getTeamById(
@@ -76,9 +72,7 @@ const createNewProject = async (req: ExtendedRequest, res: Response) => {
 
     if (!teamToBeUpdated || !teamToBeUpdated.projects) {
       await session.abortTransaction();
-      return res
-        .status(500)
-        .send({ message: "Can't add the project to this team" });
+      return res.status(400).send({ message: "Project creation failed." });
     }
 
     const newProjectsArray: string[] =
@@ -118,7 +112,8 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
 
     const updatedProject = await projectService.updateOneProject(
       projectId,
-      data
+      data,
+      null
     );
 
     if (!updatedProject) {
@@ -130,8 +125,8 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(201)
-        .send({ message: "Project was succesfully updated." });
+        .status(200)
+        .send({ message: "Project's information was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -146,7 +141,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
   try {
     const { error } = projectValidation.createNewColumnValidation(newColumnDto);
     if (error) {
-      return res.status(500).send({ message: error.details[0].message });
+      return res.status(400).send({ message: error.details[0].message });
     }
 
     const oneProject = await projectService.getProjectById(projectId);
@@ -157,7 +152,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
 
     const currentColumnsArray = oneProject.columns;
     if (currentColumnsArray.length == 98) {
-      return res.status(500).send({ message: "Can't add more columns!" });
+      return res.status(400).send({ message: "Can't add more columns!" });
     }
     const biggestOrderNumber = currentColumnsArray
       .sort((col1, col2) => col1.order - col2.order)
@@ -182,7 +177,7 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
           ". Project was not found",
       });
     } else {
-      return res.status(201).send({ message: "Column was succesfully added." });
+      return res.status(200).send({ message: "Column was succesfully added." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -193,7 +188,7 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
   const columnId = req.params.columnId;
-  // when tasks are added, remember to update this and delete tasks that were on this column
+
   try {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
@@ -220,7 +215,7 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(201)
+        .status(200)
         .send({ message: "Column was succesfully deleted." });
     }
   } catch (err: any) {
@@ -260,7 +255,7 @@ const changeColumnOrderOnProject = async (
       });
     } else {
       return res
-        .status(201)
+        .status(200)
         .send({ message: "Column Order was succesfully updated." });
     }
   } catch (err: any) {
@@ -296,8 +291,8 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(201)
-        .send({ message: "Column Order was succesfully updated." });
+        .status(200)
+        .send({ message: "Column's information was succesfully updated." });
     }
   } catch (err: any) {
     return res.status(500).send({ message: err.message });
@@ -308,7 +303,6 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
 
-  // when fetching taskss make sure their project is not deleted
   try {
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
@@ -325,7 +319,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
       });
     } else {
       return res
-        .status(201)
+        .status(200)
         .send({ message: "Project was succesfully deleted." });
     }
   } catch (err: any) {
@@ -334,8 +328,6 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
       .send({ message: "Error deleting Project with id" + projectId });
   }
 };
-
-// Implement status change
 
 const projectController = {
   getAllProjects,

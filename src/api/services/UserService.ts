@@ -10,15 +10,10 @@ const createNewUser = async (user: ICreateUserDTO) => {
 
 const getUserById = async (
   id: string,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
-  if (session) {
-    const user = await User.findById(id, {}, { session });
-    return user;
-  } else {
-    const user = await User.findById(id);
-    return user;
-  }
+  const user = await User.findById(id, {}, { session: session });
+  return user;
 };
 
 const getUserByEmail = async (email: string) => {
@@ -38,26 +33,21 @@ const getUserByRefreshToken = async (refreshToken: string) => {
 const updateUser = async (
   id: string,
   userDto: IUpdateUserModel,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
-  if (session) {
-    const user = await User.findByIdAndUpdate(id, userDto, { session });
-    return user;
-  } else {
-    const user = await User.findByIdAndUpdate(id, userDto);
-    return user;
-  }
+  const user = await User.findByIdAndUpdate(id, userDto, { session: session });
+  return user;
 };
 
 const addTeamToUser = async (
   ids: string[],
   teamId: string,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const user = await User.updateOne(
     { _id: { $in: ids } },
     { $addToSet: { teams: teamId } },
-    { session }
+    { session: session }
   );
   return user;
 };
@@ -65,7 +55,7 @@ const addTeamToUser = async (
 const removeTeamsFromUser = async (
   ids: string[],
   teamIds: string[],
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const user = await User.updateMany(
     { _id: { $in: ids } },
@@ -79,7 +69,7 @@ const addTaskToUser = async (
   id: string,
   taskId: string,
   isEmpty: boolean,
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const mutation = isEmpty
     ? {
@@ -87,14 +77,16 @@ const addTaskToUser = async (
       }
     : { $addToSet: { tasks: taskId } };
 
-  const user = await User.updateOne({ _id: id }, mutation, { session });
+  const user = await User.updateOne({ _id: id }, mutation, {
+    session: session,
+  });
   return user;
 };
 
 const removeTasksFromUser = async (
   ids: string[],
   taskIds: string[],
-  session?: mongoose.mongo.ClientSession
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const user = await User.updateMany(
     { _id: { $in: ids } },

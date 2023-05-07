@@ -2,9 +2,6 @@ import express from "express";
 import taskController from "../controllers/TaskController";
 const router = express.Router();
 
-// RETHINK labels!!
-// delete project
-
 // route: /api/task/project/:projectId
 router.get("/project/:projectId", taskController.getAllTasksByProjectId);
 
@@ -28,6 +25,12 @@ router.put("/:taskId/AddUser", taskController.addUserToTask);
 
 // route: /api/task/:taskId/RemoveUser
 router.put("/:taskId/RemoveUser", taskController.removeUserFromTask);
+
+// route: /api/task/:taskId/AddLabel
+router.put("/:taskId/AddLabel", taskController.addLabelToTask);
+
+// route: /api/task/:taskId/removeLabel
+router.put("/:taskId/RemoveLabel/:labelId", taskController.removeLabelFromTask);
 
 // route: /api/task/:taskId
 router.delete("/:taskId", taskController.deleteOneTask);

@@ -39,6 +39,13 @@ const getOneTaskById = async (taskId: string) => {
   return oneTask[0];
 };
 
+const getTaskWithBiggestEndDate = async (projectId: string) => {
+  const oneTask = await Task.findOne({ projectId: projectId }, null, {
+    sort: { endDate: -1 },
+  });
+  return oneTask;
+};
+
 const createOneTask = async (taskDto: ICreateTaskDTO, projectId: string) => {
   const newTask: ICreateTaskModel = {
     ...taskDto,
@@ -183,6 +190,7 @@ const taskService = {
   removeUsersByProjectIds,
   addLabelToTask,
   removeLabelFromTask,
+  getTaskWithBiggestEndDate,
   deleteOneTask,
 };
 

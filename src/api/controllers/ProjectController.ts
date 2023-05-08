@@ -11,6 +11,8 @@ import teamService from "../services/TeamService";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
+import taskService from "../services/TaskService";
+import { DateHelper } from "../helpers/DateHelper";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -109,6 +111,30 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       userId,
       oneProject.teamId.toString()
     );
+    const biggestEndDatetask = await taskService.getTaskWithBiggestEndDate(
+      oneProject.id.toString()
+    );
+
+    const projectWouldEndBeforeOneTask =
+      biggestEndDatetask &&
+      biggestEndDatetask.endDate &&
+      data.endDate &&
+      DateHelper.getDateDifferenceInDays(
+        data.endDate,
+        biggestEndDatetask.endDate
+      ) < 0;
+
+    const projectWouldEndBeforeItStarts =
+      data.endDate &&
+      DateHelper.getDateDifferenceInDays(data.endDate, oneProject.startDate) <
+        0;
+
+    if (projectWouldEndBeforeOneTask || projectWouldEndBeforeItStarts) {
+      return res.status(404).send({
+        message:
+          "Can't set Project's end date to be earlier than one of it's tasks end date.",
+      });
+    }
 
     const updatedProject = await projectService.updateOneProject(
       projectId,

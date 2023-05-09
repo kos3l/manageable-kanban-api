@@ -12,7 +12,6 @@ import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 import taskService from "../services/TaskService";
-import { DateHelper } from "../helpers/DateHelper";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
@@ -330,6 +329,13 @@ const completeProject = async (req: ExtendedRequest, res: Response) => {
       userId,
       oneProject.teamId.toString()
     );
+
+    if (oneProject.status == ProjectStatus.NOTSTARTED) {
+      return res
+        .status(500)
+        .send({ message: "Can't complete a not started project" });
+    }
+
     const updatedProject = await projectService.updateProjectStatus(
       projectId,
       ProjectStatus.COMPLETED

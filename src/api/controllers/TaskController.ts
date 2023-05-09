@@ -90,11 +90,17 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.startDate,
       oneProject.endDate
     );
-    const columnToBeUpdated = oneProject.columns.find((col) => {
-      createdTask.columnId == col._id;
-    });
+    const columnToBeUpdated = oneProject.columns.find((col) =>
+      col._id.equals(createdTask.columnId)
+    );
 
     let isTasksArrayEmpty = false;
+
+    if (!columnToBeUpdated) {
+      await session.abortTransaction();
+      return res.status(400).send({ message: "Column doesn't exist!" });
+    }
+
     if (columnToBeUpdated && columnToBeUpdated.tasks) {
       if (columnToBeUpdated.tasks.length > 0) {
         isTasksArrayEmpty = true;

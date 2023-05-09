@@ -249,6 +249,16 @@ const changeColumnOrderOnProject = async (
       userId,
       oneProject.teamId.toString()
     );
+
+    const columnToBeUpdated = oneProject.columns.find((col) => {
+      return col._id.equals(updatedColumn.columnId);
+    });
+
+    if (!columnToBeUpdated) {
+      await session.abortTransaction();
+      return res.status(400).send({ message: "Column doesn't exist!" });
+    }
+
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn,

@@ -7,7 +7,8 @@ export class DateHelper {
   static getDateFromStartOf(date: Date, start: dayjs.OpUnitType) {
     return dayjs(date).startOf(start).toDate();
   }
-  static isDateAftereDate(date1: Date, date2: Date) {
-    return dayjs(date1).isAfter(date2);
+
+  static isDateAftereDate(date1: Date, date2: string) {
+    return dayjs(date2).isBefore(dayjs());
   }
 }

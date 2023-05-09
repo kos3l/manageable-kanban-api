@@ -13,6 +13,7 @@ import userService from "../services/UserService";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
+import dayjs from "dayjs";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -115,10 +116,19 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
+    console.log(
+      DateHelper.isDateAftereDate(
+        new Date(),
+        oneProject.startDate.toISOString()
+      )
+    );
     // Update projects status to ongoing
     if (
       oneProject.status === ProjectStatus.NOTSTARTED &&
-      DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
+      DateHelper.isDateAftereDate(
+        new Date(),
+        oneProject.startDate.toISOString()
+      )
     ) {
       await projectService.updateProjectStatus(
         oneProject.id.toString(),
@@ -281,6 +291,7 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
 
     await session.commitTransaction();
     if (!updatedTask) {
+      await session.abortTransaction();
       return res.status(404).send({
         message:
           "Cannot update task with id=" + taskId + ". Task was not found",

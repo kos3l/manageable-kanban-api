@@ -44,9 +44,13 @@ const createNewProject = async (
 const updateOneProject = async (
   id: string,
   projectDto: IUpdateProjectDTO,
-  session: mongoose.mongo.ClientSession | null
+  session: mongoose.mongo.ClientSession | null,
+  newestAllowedDate: Date
 ) => {
-  const { error } = projectValidation.updateProjectValidation(projectDto);
+  const { error } = projectValidation.updateProjectValidation(
+    projectDto,
+    newestAllowedDate
+  );
   if (error) {
     throw Error(error.details[0].message);
   }

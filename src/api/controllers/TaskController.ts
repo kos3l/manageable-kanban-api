@@ -82,7 +82,12 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const createdTask = await taskService.createOneTask(payload, projectId);
+    const createdTask = await taskService.createOneTask(
+      payload,
+      projectId,
+      oneProject.startDate,
+      oneProject.endDate
+    );
     const columnToBeUpdated = oneProject.columns.find((col) => {
       createdTask.columnId == col._id;
     });
@@ -126,7 +131,12 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const updatedTask = await taskService.updateOneTask(taskId, data);
+    const updatedTask = await taskService.updateOneTask(
+      taskId,
+      data,
+      oneProject.startDate,
+      oneProject.endDate
+    );
 
     if (!updatedTask) {
       return res.status(404).send({

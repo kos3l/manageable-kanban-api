@@ -115,31 +115,15 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       oneProject.id.toString()
     );
 
-    const projectWouldEndBeforeOneTask =
-      biggestEndDatetask &&
-      biggestEndDatetask.endDate &&
-      data.endDate &&
-      DateHelper.getDateDifferenceInDays(
-        data.endDate,
-        biggestEndDatetask.endDate
-      ) < 0;
-
-    const projectWouldEndBeforeItStarts =
-      data.endDate &&
-      DateHelper.getDateDifferenceInDays(data.endDate, oneProject.startDate) <
-        0;
-
-    if (projectWouldEndBeforeOneTask || projectWouldEndBeforeItStarts) {
-      return res.status(404).send({
-        message:
-          "Can't set Project's end date to be earlier than one of it's tasks end date.",
-      });
-    }
+    const newestAllowedDate = biggestEndDatetask
+      ? biggestEndDatetask.endDate
+      : oneProject.startDate;
 
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data,
-      null
+      null,
+      newestAllowedDate
     );
 
     if (!updatedProject) {

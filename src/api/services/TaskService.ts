@@ -46,13 +46,22 @@ const getTaskWithBiggestEndDate = async (projectId: string) => {
   return oneTask;
 };
 
-const createOneTask = async (taskDto: ICreateTaskDTO, projectId: string) => {
+const createOneTask = async (
+  taskDto: ICreateTaskDTO,
+  projectId: string,
+  projectStartDate: Date,
+  projectEndDate: Date
+) => {
   const newTask: ICreateTaskModel = {
     ...taskDto,
     projectId: projectId,
   };
 
-  const { error } = taskValidation.createTaskValidation(newTask);
+  const { error } = taskValidation.createTaskValidation(
+    newTask,
+    projectStartDate,
+    projectEndDate
+  );
   if (error) {
     throw new Error(error.details[0].message);
   }
@@ -61,8 +70,17 @@ const createOneTask = async (taskDto: ICreateTaskDTO, projectId: string) => {
   return allTasks;
 };
 
-const updateOneTask = async (taskId: string, taskDto: IUpdateTaskDTO) => {
-  const { error } = taskValidation.updateTaskValidation(taskDto);
+const updateOneTask = async (
+  taskId: string,
+  taskDto: IUpdateTaskDTO,
+  projectStartDate: Date,
+  projectEndDate: Date
+) => {
+  const { error } = taskValidation.updateTaskValidation(
+    taskDto,
+    projectStartDate,
+    projectEndDate
+  );
   if (error) {
     throw new Error(error.details[0].message);
   }

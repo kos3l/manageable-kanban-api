@@ -21,12 +21,15 @@ const createProjectValidation = (data: ICreateProjectDTO) => {
   return schema.validate(data);
 };
 
-const updateProjectValidation = (data: IUpdateProjectDTO) => {
+const updateProjectValidation = (
+  data: IUpdateProjectDTO,
+  newestAllowedDate: Date
+) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255),
     description: Joi.string().min(3).max(1056),
     techStack: Joi.array<string>(),
-    endDate: Joi.date(),
+    endDate: Joi.date().min(newestAllowedDate).iso(),
   });
   return schema.validate(data);
 };

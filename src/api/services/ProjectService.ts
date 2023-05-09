@@ -9,6 +9,7 @@ import projectValidation from "../validations/ProjectValidation";
 import teamService from "./TeamService";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -133,6 +134,23 @@ const updateOneColumnOrder = async (
   return updatedProject;
 };
 
+const updateProjectStatus = async (
+  projectId: string,
+  status: ProjectStatus
+) => {
+  const updatedProject = await Project.updateOne(
+    {
+      _id: projectId,
+    },
+    {
+      $set: {
+        status: status,
+      },
+    }
+  );
+  return updatedProject;
+};
+
 const updateColumn = async (
   projectId: string,
   updatedColumn: IUpdateColumnDTO
@@ -250,6 +268,7 @@ const projectService = {
   addTaskToProjectColumn,
   removeTaskFromProjectColumn,
   updateColumnTaskOrder,
+  updateProjectStatus,
 };
 
 export default projectService;

@@ -11,6 +11,8 @@ import projectValidation from "../validations/ProjectValidation";
 import { IUpdateUserToTask } from "../models/dtos/task/IUpdateUserToTask";
 import userService from "../services/UserService";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -106,6 +108,18 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       isTasksArrayEmpty,
       session
     );
+
+    // Update projects status to ongoing
+    if (
+      oneProject.status === ProjectStatus.NOTSTARTED &&
+      DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
+    ) {
+      await projectService.updateProjectStatus(
+        oneProject.id.toString(),
+        ProjectStatus.ONGOING
+      );
+    }
+
     await session.commitTransaction();
     return res.send(createdTask);
   } catch (error: any) {

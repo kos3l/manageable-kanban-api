@@ -32,6 +32,9 @@ router.put(
 // route: /api/project/:projectId/column
 router.put("/:projectId/column", projectController.updateColumn);
 
+// route: /api/project/:projectId/column
+router.put("/:projectId/complete", projectController.completeProject);
+
 // route: /api/project/:projectId
 router.delete("/:projectId", projectController.deleteOneProject);
 

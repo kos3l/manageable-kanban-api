@@ -13,6 +13,7 @@ import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 import taskService from "../services/TaskService";
 import { DateHelper } from "../helpers/DateHelper";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -319,6 +320,36 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const completeProject = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const userId = req.user!;
+
+  try {
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+    const updatedProject = await projectService.updateProjectStatus(
+      projectId,
+      ProjectStatus.COMPLETED
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res.status(200).send({ message: "Project has been completed!" });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -359,6 +390,7 @@ const projectController = {
   changeColumnOrderOnProject,
   updateColumn,
   deleteOneProject,
+  completeProject,
 };
 
 export default projectController;

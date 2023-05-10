@@ -26,6 +26,7 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
           "The user needs to be a part of the team to preview it's projects",
       });
     }
+
     const allProjects = await projectService.getAllProjects(teamId);
     return res.send(allProjects);
   } catch (error: any) {
@@ -337,7 +338,7 @@ const completeProject = async (req: ExtendedRequest, res: Response) => {
     }
 
     const updatedProject = await projectService.updateProjectStatus(
-      projectId,
+      [projectId],
       ProjectStatus.COMPLETED,
       null
     );

@@ -10,14 +10,43 @@ import teamService from "./TeamService";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
+
+  if (allProjects && allProjects.length > 0) {
+    const findOverdueProjects = allProjects.filter((projects) => {
+      return DateHelper.isDateAftereDate(new Date(), projects.endDate);
+    });
+
+    if (findOverdueProjects && findOverdueProjects.length > 0) {
+      const projectIds = findOverdueProjects.map((proj) => proj.id.toString());
+      await projectService.updateProjectStatus(
+        projectIds,
+        ProjectStatus.OVERDUE,
+        null
+      );
+    }
+  }
   return allProjects;
 };
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
+  if (project) {
+    const findOverdueProject = DateHelper.isDateAftereDate(
+      new Date(),
+      project[0].endDate
+    );
+    if (findOverdueProject) {
+      await projectService.updateProjectStatus(
+        project[0].id.toString(),
+        ProjectStatus.OVERDUE,
+        null
+      );
+    }
+  }
   return project[0];
 };
 
@@ -135,13 +164,13 @@ const updateOneColumnOrder = async (
 };
 
 const updateProjectStatus = async (
-  projectId: string,
+  projectId: string[],
   status: ProjectStatus,
   session: mongoose.mongo.ClientSession | null
 ) => {
-  const updatedProject = await Project.updateOne(
+  const updatedProject = await Project.updateMany(
     {
-      _id: projectId,
+      _id: { $in: projectId },
     },
     {
       status: status,

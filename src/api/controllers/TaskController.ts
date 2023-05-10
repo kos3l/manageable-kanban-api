@@ -116,19 +116,12 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
-    console.log(
-      DateHelper.isDateAftereDate(
-        new Date(),
-        oneProject.startDate.toISOString()
-      )
-    );
+    // compares two GMT dates
     // Update projects status to ongoing
+    // is today after project start
     if (
       oneProject.status === ProjectStatus.NOTSTARTED &&
-      DateHelper.isDateAftereDate(
-        new Date(),
-        oneProject.startDate.toISOString()
-      )
+      DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
     ) {
       await projectService.updateProjectStatus(
         oneProject.id.toString(),
@@ -137,7 +130,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
     }
 
     await session.commitTransaction();
-    return res.send(createdTask);
+    return res.send(null);
   } catch (error: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: error.message });

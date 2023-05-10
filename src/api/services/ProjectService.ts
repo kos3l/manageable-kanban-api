@@ -143,9 +143,7 @@ const updateProjectStatus = async (
       _id: projectId,
     },
     {
-      $set: {
-        status: status,
-      },
+      status: status,
     }
   );
   return updatedProject;

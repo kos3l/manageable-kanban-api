@@ -10,11 +10,16 @@ const createTaskValidation = (
   const schema = Joi.object({
     title: Joi.string().min(2).max(255).required(),
     description: Joi.string().min(3).max(1056),
-    startDate: Joi.date().required().max(projectEndDate).min(projectStartDate),
+    startDate: Joi.date()
+      .iso()
+      .required()
+      .max(projectEndDate)
+      .min(projectStartDate),
     endDate: Joi.date()
       .required()
       .max(projectEndDate)
       .min(projectStartDate)
+      .iso()
       .greater(Joi.ref("startDate")),
     columnId: Joi.string().required(),
     projectId: Joi.string().required(),
@@ -30,8 +35,9 @@ const updateTaskValidation = (
   const schema = Joi.object({
     title: Joi.string().min(2).max(255),
     description: Joi.string().min(3).max(1056),
-    startDate: Joi.date().max(projectEndDate).min(projectStartDate),
+    startDate: Joi.date().iso().max(projectEndDate).min(projectStartDate),
     endDate: Joi.date()
+      .iso()
       .max(projectEndDate)
       .min(projectStartDate)
       .greater(Joi.ref("startDate")),

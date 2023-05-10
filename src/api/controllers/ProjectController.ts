@@ -338,7 +338,8 @@ const completeProject = async (req: ExtendedRequest, res: Response) => {
 
     const updatedProject = await projectService.updateProjectStatus(
       projectId,
-      ProjectStatus.COMPLETED
+      ProjectStatus.COMPLETED,
+      null
     );
 
     if (!updatedProject) {

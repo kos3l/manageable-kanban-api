@@ -136,7 +136,8 @@ const updateOneColumnOrder = async (
 
 const updateProjectStatus = async (
   projectId: string,
-  status: ProjectStatus
+  status: ProjectStatus,
+  session: mongoose.mongo.ClientSession | null
 ) => {
   const updatedProject = await Project.updateOne(
     {
@@ -144,7 +145,8 @@ const updateProjectStatus = async (
     },
     {
       status: status,
-    }
+    },
+    { session: session }
   );
   return updatedProject;
 };

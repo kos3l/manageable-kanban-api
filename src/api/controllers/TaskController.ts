@@ -125,12 +125,13 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
     ) {
       await projectService.updateProjectStatus(
         oneProject.id.toString(),
-        ProjectStatus.ONGOING
+        ProjectStatus.ONGOING,
+        session
       );
     }
 
     await session.commitTransaction();
-    return res.send(null);
+    return res.send(createdTask);
   } catch (error: any) {
     await session.abortTransaction();
     return res.status(500).send({ message: error.message });

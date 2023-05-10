@@ -116,7 +116,6 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       session
     );
 
-    // compares two GMT dates
     // Update projects status to ongoing
     // is today after project start
     if (

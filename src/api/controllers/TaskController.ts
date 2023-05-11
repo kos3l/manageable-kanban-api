@@ -14,7 +14,6 @@ import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 import dayjs from "dayjs";
-
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;

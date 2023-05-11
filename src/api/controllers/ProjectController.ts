@@ -14,6 +14,8 @@ import projectValidation from "../validations/ProjectValidation";
 import taskService from "../services/TaskService";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
+import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
+import userService from "../services/UserService";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -228,7 +230,9 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
   const userId = req.user!;
   const columnId = req.params.columnId;
 
+  const session = await conn.startSession();
   try {
+    session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
     if (!oneProject) {
       return res.status(500).send({ message: "Project not found!" });
@@ -255,13 +259,44 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
           projectId +
           ". Project was not found",
       });
-    } else {
-      return res
-        .status(200)
-        .send({ message: "Column was succesfully deleted." });
     }
+
+    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn({
+      columnId: columnId,
+      projectId: oneProject.id,
+    });
+
+    if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {
+      const taskIds = tasksOnDeletedColumn.map((task) => task.id);
+      const userIdsArray = tasksOnDeletedColumn.map((task) => task.userIds);
+      const userIds = userIdsArray
+        .reduce((acc, val) => {
+          if (acc && acc.length > 0) {
+            return [...acc, ...val];
+          } else {
+            return [...val];
+          }
+        })
+        .map((val) => val._id.toString());
+
+      if (userIds && userIds.length > 0) {
+        const userIDsNoDuplicates = [...new Set(userIds)];
+        await userService.removeTasksFromUser(
+          userIDsNoDuplicates,
+          taskIds,
+          session
+        );
+      }
+      await taskService.deleteManyTasks(taskIds);
+    }
+
+    await session.commitTransaction();
+    return res.status(200).send({ message: "Column was succesfully deleted." });
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 

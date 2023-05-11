@@ -11,6 +11,8 @@ import teamService from "../services/TeamService";
 import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
+import taskService from "../services/TaskService";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -24,6 +26,7 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
           "The user needs to be a part of the team to preview it's projects",
       });
     }
+
     const allProjects = await projectService.getAllProjects(teamId);
     return res.send(allProjects);
   } catch (error: any) {
@@ -109,11 +112,19 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       userId,
       oneProject.teamId.toString()
     );
+    const biggestEndDatetask = await taskService.getTaskWithBiggestEndDate(
+      oneProject.id.toString()
+    );
+
+    const newestAllowedDate = biggestEndDatetask
+      ? biggestEndDatetask.endDate
+      : oneProject.startDate;
 
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data,
-      null
+      null,
+      newestAllowedDate
     );
 
     if (!updatedProject) {
@@ -239,6 +250,16 @@ const changeColumnOrderOnProject = async (
       userId,
       oneProject.teamId.toString()
     );
+
+    const columnToBeUpdated = oneProject.columns.find((col) => {
+      return col._id.equals(updatedColumn.columnId);
+    });
+
+    if (!columnToBeUpdated) {
+      await session.abortTransaction();
+      return res.status(400).send({ message: "Column doesn't exist!" });
+    }
+
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn,
@@ -299,6 +320,44 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const completeProject = async (req: ExtendedRequest, res: Response) => {
+  const projectId = req.params.projectId;
+  const userId = req.user!;
+
+  try {
+    const oneProject = await projectService.getProjectById(projectId);
+    await projectService.verifyIfUserCanAccessTheProject(
+      userId,
+      oneProject.teamId.toString()
+    );
+
+    if (oneProject.status == ProjectStatus.NOTSTARTED) {
+      return res
+        .status(500)
+        .send({ message: "Can't complete a not started project" });
+    }
+
+    const updatedProject = await projectService.updateProjectStatus(
+      [projectId],
+      ProjectStatus.COMPLETED,
+      null
+    );
+
+    if (!updatedProject) {
+      return res.status(404).send({
+        message:
+          "Cannot update project with id=" +
+          projectId +
+          ". Project was not found",
+      });
+    } else {
+      return res.status(200).send({ message: "Project has been completed!" });
+    }
+  } catch (err: any) {
+    return res.status(500).send({ message: err.message });
+  }
+};
+
 const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -339,6 +398,7 @@ const projectController = {
   changeColumnOrderOnProject,
   updateColumn,
   deleteOneProject,
+  completeProject,
 };
 
 export default projectController;

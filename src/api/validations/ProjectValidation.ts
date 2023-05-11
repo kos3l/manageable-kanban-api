@@ -1,5 +1,6 @@
 import Joi from "joi";
 import mongoose from "mongoose";
+import { DateHelper } from "../helpers/DateHelper";
 import { ColumnDocument } from "../models/documents/ColumnDocument";
 import { ICreateColumnDTO } from "../models/dtos/project/ICreateColumnDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
@@ -9,25 +10,28 @@ import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 
 const createProjectValidation = (data: ICreateProjectDTO) => {
+  const today = DateHelper.getDateFromStartOf(new Date(), "day");
   const schema = Joi.object({
     name: Joi.string().min(2).max(255).required(),
     description: Joi.string().min(3).max(1056),
     techStack: Joi.array<string>().required(),
-    startDate: Joi.date().required(),
-    endDate: Joi.date().required(),
+    startDate: Joi.date().min(today).iso().required(),
+    endDate: Joi.date().greater(Joi.ref("startDate")).iso().required(),
     teamId: Joi.string().required(),
     columns: Joi.array<ColumnDocument>().required(),
   });
   return schema.validate(data);
 };
 
-const updateProjectValidation = (data: IUpdateProjectDTO) => {
+const updateProjectValidation = (
+  data: IUpdateProjectDTO,
+  newestAllowedDate: Date
+) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255),
     description: Joi.string().min(3).max(1056),
     techStack: Joi.array<string>(),
-    startDate: Joi.date(),
-    endDate: Joi.date(),
+    endDate: Joi.date().min(newestAllowedDate).iso(),
   });
   return schema.validate(data);
 };

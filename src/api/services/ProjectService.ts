@@ -37,7 +37,7 @@ const getAllProjects = async (teamId: string) => {
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
-  if (project) {
+  if (project && project.length > 0) {
     const findOverdueProject =
       DateHelper.isDateAftereDate(new Date(), project[0].endDate) &&
       project[0].status !== ProjectStatus.COMPLETED;
@@ -50,6 +50,7 @@ const getProjectById = async (projectId: string) => {
       );
     }
   }
+
   return project[0];
 };
 
@@ -89,7 +90,7 @@ const updateOneProject = async (
   }
 
   if (session) {
-    const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
+    const updatedProject = await Project.updateOne({ _id: id }, projectDto, {
       session,
     });
     return updatedProject;
@@ -267,18 +268,6 @@ const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
   return updatedProject;
 };
 
-const verifyIfUserCanAccessTheProject = async (
-  userId: string,
-  teamId: string
-) => {
-  const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
-  if (isUserInTheTeam == null) {
-    throw new Error(
-      "The user needs to be a part of the team to preview it's projects"
-    );
-  }
-};
-
 const softDeleteOneProject = async (id: string) => {
   const deletedProject = await Project.findByIdAndUpdate(id, {
     isDeleted: true,
@@ -294,7 +283,6 @@ const projectService = {
   updateOneProject,
   updateProjectColumns,
   updateOneColumnOrder,
-  verifyIfUserCanAccessTheProject,
   updateColumn,
   softDeleteOneProject,
   addTaskToProjectColumn,

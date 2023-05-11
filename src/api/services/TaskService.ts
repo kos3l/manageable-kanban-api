@@ -196,6 +196,11 @@ const deleteOneTask = async (taskId: mongoose.Types.ObjectId) => {
   return deleted;
 };
 
+const deleteManyTasks = async (taskIds: mongoose.Types.ObjectId[]) => {
+  const deleted = await Task.deleteMany({ _id: { $in: taskIds } });
+  return deleted;
+};
+
 const taskService = {
   getAllTasksByProjectId,
   createOneTask,
@@ -210,6 +215,7 @@ const taskService = {
   removeLabelFromTask,
   getTaskWithBiggestEndDate,
   deleteOneTask,
+  deleteManyTasks,
 };
 
 export default taskService;

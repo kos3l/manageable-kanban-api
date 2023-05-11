@@ -24,7 +24,7 @@ const getAllProjects = async (teamId: string) => {
     });
 
     if (findOverdueProjects && findOverdueProjects.length > 0) {
-      const projectIds = findOverdueProjects.map((proj) => proj.id.toString());
+      const projectIds = findOverdueProjects.map((proj) => proj._id.toString());
       await projectService.updateProjectStatus(
         projectIds,
         ProjectStatus.OVERDUE,
@@ -65,7 +65,23 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
       },
     },
   ]);
+  if (allProjects && allProjects.length > 0) {
+    const findOverdueProjects = allProjects.filter((projects) => {
+      return (
+        DateHelper.isDateAftereDate(new Date(), projects.endDate) &&
+        projects.status !== ProjectStatus.COMPLETED
+      );
+    });
 
+    if (findOverdueProjects && findOverdueProjects.length > 0) {
+      const projectIds = findOverdueProjects.map((proj) => proj._id.toString());
+      await projectService.updateProjectStatus(
+        projectIds,
+        ProjectStatus.OVERDUE,
+        null
+      );
+    }
+  }
   return allProjects;
 };
 

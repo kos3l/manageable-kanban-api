@@ -89,7 +89,7 @@ const updateOneProject = async (
   }
 
   if (session) {
-    const updatedProject = await Project.findByIdAndUpdate(id, [projectDto], {
+    const updatedProject = await Project.updateOne({ _id: id }, projectDto, {
       session,
     });
     return updatedProject;

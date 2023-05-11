@@ -13,6 +13,7 @@ import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 import taskService from "../services/TaskService";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -51,7 +52,6 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
-// MARK: project changes status once the first task is added
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
   const newProjectDTO: ICreateProjectDTO = req.body;
   const userId = req.user!;
@@ -106,7 +106,9 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
   const userId = req.user!;
   const data: IUpdateProjectDTO = req.body;
 
+  const session = await conn.startSession();
   try {
+    session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
@@ -123,7 +125,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data,
-      null,
+      session,
       newestAllowedDate
     );
 
@@ -134,13 +136,29 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
           projectId +
           ". Project was not found",
       });
-    } else {
-      return res
-        .status(200)
-        .send({ message: "Project's information was succesfully updated." });
     }
+
+    if (
+      oneProject.status == ProjectStatus.OVERDUE &&
+      data.endDate &&
+      DateHelper.isDateAftereDate(new Date(), data.endDate) == false
+    ) {
+      await projectService.updateProjectStatus(
+        oneProject.id.toString(),
+        ProjectStatus.ONGOING,
+        session
+      );
+    }
+
+    await session.commitTransaction();
+    return res
+      .status(200)
+      .send({ message: "Project's information was succesfully updated." });
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 

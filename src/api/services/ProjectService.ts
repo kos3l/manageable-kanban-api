@@ -37,7 +37,7 @@ const getAllProjects = async (teamId: string) => {
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
-  if (project) {
+  if (project && project.length > 0) {
     const findOverdueProject =
       DateHelper.isDateAftereDate(new Date(), project[0].endDate) &&
       project[0].status !== ProjectStatus.COMPLETED;
@@ -50,6 +50,7 @@ const getProjectById = async (projectId: string) => {
       );
     }
   }
+
   return project[0];
 };
 

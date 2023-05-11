@@ -41,6 +41,10 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -110,6 +114,9 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
   try {
     session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -174,6 +181,9 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
     }
 
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -220,6 +230,9 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -264,6 +277,9 @@ const changeColumnOrderOnProject = async (
   try {
     session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -312,6 +328,9 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -344,6 +363,9 @@ const completeProject = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -382,6 +404,9 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()

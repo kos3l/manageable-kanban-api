@@ -21,6 +21,9 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -39,6 +42,9 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(payload.projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -60,6 +66,9 @@ const getOneTaskById = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -80,6 +89,9 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
   try {
     session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -149,6 +161,9 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -189,6 +204,9 @@ const updateTasksOrderInColumn = async (
       throw Error(error.details[0].message);
     }
     const oneProject = await projectService.getProjectById(data.projectId);
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -250,7 +268,9 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     // check if both logged in user and user to be added belong to the team
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
@@ -314,7 +334,9 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     if (oneTask.userIds?.length == 0) {
       return res
         .status(400)
@@ -368,6 +390,9 @@ const addLabelToTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -409,6 +434,9 @@ const removeLabelFromTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()
@@ -442,6 +470,9 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     await projectService.verifyIfUserCanAccessTheProject(
       userId,
       oneProject.teamId.toString()

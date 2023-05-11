@@ -35,6 +35,25 @@ const getAllProjects = async (teamId: string) => {
   return allProjects;
 };
 
+const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
+  const allProjects = await Project.aggregate([
+    // get all projects witht their team info by the user id stored on the team
+    {
+      $match: { teamId: { $in: allTeamIds } },
+    },
+    {
+      $lookup: {
+        from: "teams",
+        localField: "teamId",
+        foreignField: "_id",
+        as: "team",
+      },
+    },
+  ]);
+
+  return allProjects;
+};
+
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
   if (project && project.length > 0) {
@@ -279,6 +298,7 @@ const softDeleteOneProject = async (id: string) => {
 const projectService = {
   createNewProject,
   getAllProjects,
+  getAllUserProjects,
   getProjectById,
   updateOneProject,
   updateProjectColumns,

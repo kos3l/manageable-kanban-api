@@ -2,6 +2,9 @@ import express from "express";
 import projectController from "../controllers/ProjectController";
 const router = express.Router();
 
+// route: /api/project/user
+router.get("/user", projectController.getAllUserProjects);
+
 // route: /api/project/:projectId
 router.get("/:projectId", projectController.getProjectById);
 

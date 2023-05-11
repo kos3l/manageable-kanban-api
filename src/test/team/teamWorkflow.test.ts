@@ -61,12 +61,14 @@ describe("Team workflow tests - Happy scenarios", () => {
             expect(res).to.have.cookie("jwt");
             expect(res.status).to.equal(200);
             let token = res.body.accessToken;
+
             // Get all teams
             agent
               .get("/api/team")
               .set("auth-token", token)
               .end((err, res) => {
                 should().exist(res);
+
                 res.should.have.status(200);
                 res.body.should.be.a("array");
                 res.body.length.should.be.eql(1);

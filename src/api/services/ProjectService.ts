@@ -268,18 +268,6 @@ const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
   return updatedProject;
 };
 
-const verifyIfUserCanAccessTheProject = async (
-  userId: string,
-  teamId: string
-) => {
-  const isUserInTheTeam = await teamService.getTeamById(userId, teamId);
-  if (isUserInTheTeam == null) {
-    throw new Error(
-      "The user needs to be a part of the team to preview it's projects"
-    );
-  }
-};
-
 const softDeleteOneProject = async (id: string) => {
   const deletedProject = await Project.findByIdAndUpdate(id, {
     isDeleted: true,
@@ -295,7 +283,6 @@ const projectService = {
   updateOneProject,
   updateProjectColumns,
   updateOneColumnOrder,
-  verifyIfUserCanAccessTheProject,
   updateColumn,
   softDeleteOneProject,
   addTaskToProjectColumn,

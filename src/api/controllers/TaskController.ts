@@ -13,15 +13,17 @@ import userService from "../services/UserService";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
-import dayjs from "dayjs";
-
+import accessController from "./AccessController";
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -39,7 +41,10 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(payload.projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -60,7 +65,10 @@ const getOneTaskById = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -80,7 +88,10 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
   try {
     session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -149,7 +160,10 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -189,7 +203,10 @@ const updateTasksOrderInColumn = async (
       throw Error(error.details[0].message);
     }
     const oneProject = await projectService.getProjectById(data.projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -250,13 +267,15 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     // check if both logged in user and user to be added belong to the team
-    await projectService.verifyIfUserCanAccessTheProject(
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    await accessController.verifyIfUserCanAccessTheTeam(
       payload.userId,
       oneProject.teamId.toString()
     );
@@ -314,7 +333,9 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
     if (oneTask.userIds?.length == 0) {
       return res
         .status(400)
@@ -322,11 +343,11 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
     }
 
     // check if both logged in user and user to be removed belong to the team
-    await projectService.verifyIfUserCanAccessTheProject(
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    await accessController.verifyIfUserCanAccessTheTeam(
       payload.userId,
       oneProject.teamId.toString()
     );
@@ -368,7 +389,10 @@ const addLabelToTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -409,7 +433,10 @@ const removeLabelFromTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -442,7 +469,10 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
     const oneProject = await projectService.getProjectById(
       oneTask.projectId.toString()
     );
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );

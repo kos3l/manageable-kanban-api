@@ -10,6 +10,6 @@ export interface TaskDocument {
   picture?: string;
   columnId: mongoose.Types.ObjectId;
   projectId: mongoose.Types.ObjectId;
-  userIds?: mongoose.Types.ObjectId[];
+  userIds: mongoose.Types.ObjectId[];
   labels?: LabelDocument[];
 }

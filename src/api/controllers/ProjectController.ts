@@ -13,6 +13,9 @@ import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import projectValidation from "../validations/ProjectValidation";
 import taskService from "../services/TaskService";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
+import userService from "../services/UserService";
+import accessController from "./AccessController";
 
 const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   const teamId = req.params.teamId;
@@ -40,7 +43,11 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -51,7 +58,6 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
-// MARK: project changes status once the first task is added
 const createNewProject = async (req: ExtendedRequest, res: Response) => {
   const newProjectDTO: ICreateProjectDTO = req.body;
   const userId = req.user!;
@@ -106,9 +112,14 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
   const userId = req.user!;
   const data: IUpdateProjectDTO = req.body;
 
+  const session = await conn.startSession();
   try {
+    session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -123,7 +134,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
     const updatedProject = await projectService.updateOneProject(
       projectId,
       data,
-      null,
+      session,
       newestAllowedDate
     );
 
@@ -134,13 +145,29 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
           projectId +
           ". Project was not found",
       });
-    } else {
-      return res
-        .status(200)
-        .send({ message: "Project's information was succesfully updated." });
     }
+
+    if (
+      oneProject.status == ProjectStatus.OVERDUE &&
+      data.endDate &&
+      DateHelper.isDateAftereDate(new Date(), data.endDate) == false
+    ) {
+      await projectService.updateProjectStatus(
+        oneProject.id.toString(),
+        ProjectStatus.ONGOING,
+        session
+      );
+    }
+
+    await session.commitTransaction();
+    return res
+      .status(200)
+      .send({ message: "Project's information was succesfully updated." });
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 
@@ -156,7 +183,10 @@ const addNewColumnToProject = async (req: ExtendedRequest, res: Response) => {
     }
 
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -200,9 +230,14 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
   const userId = req.user!;
   const columnId = req.params.columnId;
 
+  const session = await conn.startSession();
   try {
+    session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -224,13 +259,44 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
           projectId +
           ". Project was not found",
       });
-    } else {
-      return res
-        .status(200)
-        .send({ message: "Column was succesfully deleted." });
     }
+
+    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn({
+      columnId: columnId,
+      projectId: oneProject.id,
+    });
+
+    if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {
+      const taskIds = tasksOnDeletedColumn.map((task) => task.id);
+      const userIdsArray = tasksOnDeletedColumn.map((task) => task.userIds);
+      const userIds = userIdsArray
+        .reduce((acc, val) => {
+          if (acc && acc.length > 0) {
+            return [...acc, ...val];
+          } else {
+            return [...val];
+          }
+        })
+        .map((val) => val._id.toString());
+
+      if (userIds && userIds.length > 0) {
+        const userIDsNoDuplicates = [...new Set(userIds)];
+        await userService.removeTasksFromUser(
+          userIDsNoDuplicates,
+          taskIds,
+          session
+        );
+      }
+      await taskService.deleteManyTasks(taskIds);
+    }
+
+    await session.commitTransaction();
+    return res.status(200).send({ message: "Column was succesfully deleted." });
   } catch (err: any) {
+    await session.abortTransaction();
     return res.status(500).send({ message: err.message });
+  } finally {
+    session.endSession();
   }
 };
 
@@ -246,7 +312,10 @@ const changeColumnOrderOnProject = async (
   try {
     session.startTransaction();
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -294,7 +363,10 @@ const updateColumn = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -326,7 +398,10 @@ const completeProject = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
@@ -364,7 +439,10 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
-    await projectService.verifyIfUserCanAccessTheProject(
+    if (!oneProject) {
+      return res.status(500).send({ message: "Project not found!" });
+    }
+    await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );

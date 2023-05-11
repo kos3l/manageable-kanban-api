@@ -10,6 +10,7 @@ import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
 import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 import teamValidation from "../validations/TeamValidation";
 import taskService from "../services/TaskService";
+import accessController from "./AccessController";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
   const id = req.user!;
@@ -81,8 +82,10 @@ const createNewTeam = async (req: ExtendedRequest, res: Response) => {
 const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
   const id: string = req.params.id;
   const data: IUpdateTeamDTO = req.body;
+  const userId = req.user!;
 
   try {
+    await accessController.verifyIfUserCanAccessTheTeam(userId, id);
     const { error } = teamValidation.updateTeamValidation(data);
     if (error) {
       return res.status(400).send({ message: error.details[0].message });
@@ -108,11 +111,13 @@ const updateOneTeam = async (req: ExtendedRequest, res: Response) => {
 
 const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
   const teamId: string = req.params.id;
+  const userId = req.user!;
   let teamPayload: IUpdateTeamUsersDTO = req.body;
 
   const session = await conn.startSession();
   try {
     session.startTransaction();
+    await accessController.verifyIfUserCanAccessTheTeam(userId, teamId);
     const { error } = teamValidation.updateTeamUsersValidation(teamPayload);
     if (error) {
       return res.status(400).send({ message: error.details[0].message });

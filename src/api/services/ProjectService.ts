@@ -9,14 +9,47 @@ import projectValidation from "../validations/ProjectValidation";
 import teamService from "./TeamService";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
 
 const getAllProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
+
+  if (allProjects && allProjects.length > 0) {
+    const findOverdueProjects = allProjects.filter((projects) => {
+      return (
+        DateHelper.isDateAftereDate(new Date(), projects.endDate) &&
+        projects.status !== ProjectStatus.COMPLETED
+      );
+    });
+
+    if (findOverdueProjects && findOverdueProjects.length > 0) {
+      const projectIds = findOverdueProjects.map((proj) => proj.id.toString());
+      await projectService.updateProjectStatus(
+        projectIds,
+        ProjectStatus.OVERDUE,
+        null
+      );
+    }
+  }
   return allProjects;
 };
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.find({ _id: projectId });
+  if (project) {
+    const findOverdueProject =
+      DateHelper.isDateAftereDate(new Date(), project[0].endDate) &&
+      project[0].status !== ProjectStatus.COMPLETED;
+
+    if (findOverdueProject) {
+      await projectService.updateProjectStatus(
+        project[0].id.toString(),
+        ProjectStatus.OVERDUE,
+        null
+      );
+    }
+  }
   return project[0];
 };
 
@@ -44,9 +77,13 @@ const createNewProject = async (
 const updateOneProject = async (
   id: string,
   projectDto: IUpdateProjectDTO,
-  session: mongoose.mongo.ClientSession | null
+  session: mongoose.mongo.ClientSession | null,
+  newestAllowedDate: Date
 ) => {
-  const { error } = projectValidation.updateProjectValidation(projectDto);
+  const { error } = projectValidation.updateProjectValidation(
+    projectDto,
+    newestAllowedDate
+  );
   if (error) {
     throw Error(error.details[0].message);
   }
@@ -123,6 +160,23 @@ const updateOneColumnOrder = async (
       $set: {
         "columns.$.order": updatedColumn.order,
       },
+    },
+    { session: session }
+  );
+  return updatedProject;
+};
+
+const updateProjectStatus = async (
+  projectId: string[],
+  status: ProjectStatus,
+  session: mongoose.mongo.ClientSession | null
+) => {
+  const updatedProject = await Project.updateMany(
+    {
+      _id: { $in: projectId },
+    },
+    {
+      status: status,
     },
     { session: session }
   );
@@ -246,6 +300,7 @@ const projectService = {
   addTaskToProjectColumn,
   removeTaskFromProjectColumn,
   updateColumnTaskOrder,
+  updateProjectStatus,
 };
 
 export default projectService;

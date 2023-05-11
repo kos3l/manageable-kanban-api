@@ -11,6 +11,9 @@ import projectValidation from "../validations/ProjectValidation";
 import { IUpdateUserToTask } from "../models/dtos/task/IUpdateUserToTask";
 import userService from "../services/UserService";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
+import { ProjectStatus } from "../models/enum/ProjectStatus";
+import { DateHelper } from "../helpers/DateHelper";
+import dayjs from "dayjs";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -29,7 +32,7 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
     return res.status(500).send({ message: error.message });
   }
 };
-
+// get all overdue tasks from columns id []
 const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
   const payload: IGetTasksByColumnDTO = req.body;
   const userId = req.user!;
@@ -82,12 +85,23 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const createdTask = await taskService.createOneTask(payload, projectId);
-    const columnToBeUpdated = oneProject.columns.find((col) => {
-      createdTask.columnId == col._id;
-    });
+    const createdTask = await taskService.createOneTask(
+      payload,
+      projectId,
+      oneProject.startDate,
+      oneProject.endDate
+    );
+    const columnToBeUpdated = oneProject.columns.find((col) =>
+      col._id.equals(createdTask.columnId)
+    );
 
     let isTasksArrayEmpty = false;
+
+    if (!columnToBeUpdated) {
+      await session.abortTransaction();
+      return res.status(400).send({ message: "Column doesn't exist!" });
+    }
+
     if (columnToBeUpdated && columnToBeUpdated.tasks) {
       if (columnToBeUpdated.tasks.length > 0) {
         isTasksArrayEmpty = true;
@@ -101,6 +115,20 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       isTasksArrayEmpty,
       session
     );
+
+    // Update projects status to ongoing
+    // is today after project start
+    if (
+      oneProject.status === ProjectStatus.NOTSTARTED &&
+      DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
+    ) {
+      await projectService.updateProjectStatus(
+        oneProject.id.toString(),
+        ProjectStatus.ONGOING,
+        session
+      );
+    }
+
     await session.commitTransaction();
     return res.send(createdTask);
   } catch (error: any) {
@@ -126,7 +154,12 @@ const updateOneTask = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const updatedTask = await taskService.updateOneTask(taskId, data);
+    const updatedTask = await taskService.updateOneTask(
+      taskId,
+      data,
+      oneProject.startDate,
+      oneProject.endDate
+    );
 
     if (!updatedTask) {
       return res.status(404).send({
@@ -251,6 +284,7 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
 
     await session.commitTransaction();
     if (!updatedTask) {
+      await session.abortTransaction();
       return res.status(404).send({
         message:
           "Cannot update task with id=" + taskId + ". Task was not found",

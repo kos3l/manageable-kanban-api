@@ -12,15 +12,55 @@ const getAllTeams = async (userId: string) => {
 };
 
 const getTeamById = async (userId: string, teamId: string) => {
-  const team = await Team.findById(teamId);
+  const team = await Team.aggregate([
+    {
+      $match: { _id: new mongoose.Types.ObjectId(teamId) },
+    },
+    {
+      $lookup: {
+        from: "projects",
+        localField: "projects",
+        foreignField: "_id",
+        as: "projectModels",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "users",
+        foreignField: "_id",
+        as: "userModels",
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        createdBy: 1,
+        projectModels: {
+          _id: 1,
+          name: 1,
+          status: 1,
+        },
+        userModels: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+        },
+      },
+    },
+  ]);
+  console.log(team);
   if (
     team &&
-    !team.createdBy.equals(userId) &&
-    !team.users.includes(new mongoose.Types.ObjectId(userId))
+    !team[0].createdBy.equals(userId) &&
+    !team[0].users.includes(new mongoose.Types.ObjectId(userId))
   ) {
     return null;
   }
-  return team;
+
+  return team[0];
 };
 
 const createNewTeam = async (

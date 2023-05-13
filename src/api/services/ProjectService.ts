@@ -49,6 +49,7 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
         as: "team",
       },
     },
+
     {
       $project: {
         name: 1,

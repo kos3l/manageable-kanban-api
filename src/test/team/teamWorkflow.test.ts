@@ -80,7 +80,6 @@ describe("Team workflow tests - Happy scenarios", () => {
 
   it("/GET:id - should register + login a user and get a teams by id (1 team that was created by default)", (done) => {
     // Register user
-
     const agent = chai.request.agent(app);
     chai
       .request(app)
@@ -116,7 +115,6 @@ describe("Team workflow tests - Happy scenarios", () => {
 
   it("/POST - should register + login a user and create a team", (done) => {
     // Register user
-
     const agent = chai.request.agent(app);
     chai
       .request(app)
@@ -207,6 +205,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                     expect(res.body)
                       .to.have.property("name")
                       .equal(updatedTeam.name);
+
                     expect(res.body).to.have.property("__v").equal(1);
 
                     done();

@@ -28,7 +28,7 @@ const getLoggedInUserProfile = async (req: ExtendedRequest, res: Response) => {
 
 const getUserByEmail = async (req: ExtendedRequest, res: Response) => {
   try {
-    const email = req.body.email;
+    const email = req.params.email;
     const user = await userService.getUserByEmail(email);
 
     return res.json(user);

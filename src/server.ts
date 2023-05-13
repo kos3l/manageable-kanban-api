@@ -13,7 +13,7 @@ import swaggerUi from "swagger-ui-express";
 import cors from "cors";
 import { verifyToken } from "./api/middleware/TokenMiddleware";
 import cookieParser from "cookie-parser";
-const jwt = require("jsonwebtoken");
+
 const swaggerDefinition = yaml.load("./src/config/swagger.yaml");
 
 const app: express.Application = express();

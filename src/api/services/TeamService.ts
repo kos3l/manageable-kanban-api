@@ -38,6 +38,8 @@ const getTeamById = async (userId: string, teamId: string) => {
         description: 1,
         createdBy: 1,
         createdAt: 1,
+        users: 1,
+        projects: 1,
         projectModels: {
           _id: 1,
           name: 1,
@@ -49,6 +51,7 @@ const getTeamById = async (userId: string, teamId: string) => {
           lastName: 1,
           email: 1,
         },
+        __v: 1,
       },
     },
   ]);

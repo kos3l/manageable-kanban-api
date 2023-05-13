@@ -37,6 +37,19 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const getAllUserProjects = async (req: ExtendedRequest, res: Response) => {
+  const userId = req.user!;
+
+  try {
+    const allUserTeams = await teamService.getAllTeams(userId);
+    const teamsIds = allUserTeams.map((team) => team._id);
+    const allProjects = await projectService.getAllUserProjects(teamsIds);
+    return res.send(allProjects);
+  } catch (error: any) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
 const getProjectById = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -468,6 +481,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
 
 const projectController = {
   getAllProjects,
+  getAllUserProjects,
   getProjectById,
   createNewProject,
   updateOneProject,

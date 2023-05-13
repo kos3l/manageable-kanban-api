@@ -8,6 +8,7 @@ import { IUpdateTeamProjectsDTO } from "../models/dtos/team/IUpdateTeamProjectsD
 const createTeamValidation = (data: ICreateTeamDTO) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255).required(),
+    description: Joi.string().min(3).max(1056),
     createdBy: Joi.object<mongoose.Types.ObjectId>().required(),
     users: Joi.array<mongoose.Types.ObjectId>().min(1).max(20).required(),
   });
@@ -17,6 +18,7 @@ const createTeamValidation = (data: ICreateTeamDTO) => {
 const updateTeamValidation = (data: IUpdateTeamDTO) => {
   const schema = Joi.object({
     name: Joi.string().min(2).max(255),
+    description: Joi.string().min(3).max(1056),
   });
   return schema.validate(data);
 };

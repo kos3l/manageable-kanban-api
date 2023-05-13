@@ -37,6 +37,7 @@ const getTeamById = async (userId: string, teamId: string) => {
         name: 1,
         description: 1,
         createdBy: 1,
+        createdAt: 1,
         projectModels: {
           _id: 1,
           name: 1,
@@ -51,7 +52,6 @@ const getTeamById = async (userId: string, teamId: string) => {
       },
     },
   ]);
-  console.log(team);
   if (
     team &&
     !team[0].createdBy.equals(userId) &&

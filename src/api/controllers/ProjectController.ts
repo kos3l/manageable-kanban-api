@@ -17,7 +17,10 @@ import { DateHelper } from "../helpers/DateHelper";
 import userService from "../services/UserService";
 import accessController from "./AccessController";
 
-const getAllProjects = async (req: ExtendedRequest, res: Response) => {
+const getAllProjectsTeamProjects = async (
+  req: ExtendedRequest,
+  res: Response
+) => {
   const teamId = req.params.teamId;
   const userId = req.user!;
 
@@ -30,7 +33,7 @@ const getAllProjects = async (req: ExtendedRequest, res: Response) => {
       });
     }
 
-    const allProjects = await projectService.getAllProjects(teamId);
+    const allProjects = await projectService.getAllProjectsTeamProjects(teamId);
     return res.send(allProjects);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
@@ -480,7 +483,7 @@ const deleteOneProject = async (req: ExtendedRequest, res: Response) => {
 };
 
 const projectController = {
-  getAllProjects,
+  getAllProjectsTeamProjects,
   getAllUserProjects,
   getProjectById,
   createNewProject,

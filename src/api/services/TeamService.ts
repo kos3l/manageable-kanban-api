@@ -14,7 +14,7 @@ const getAllTeams = async (userId: string) => {
 const getTeamById = async (userId: string, teamId: string) => {
   const team = await Team.aggregate([
     {
-      $match: { _id: new mongoose.Types.ObjectId(teamId) },
+      $match: { _id: new mongoose.Types.ObjectId(teamId), isDeleted: false },
     },
     {
       $lookup: {

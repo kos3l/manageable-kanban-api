@@ -6,7 +6,7 @@ import userService from "../services/UserService";
 const refreshToken = async (req: ExtendedRequest, res: Response) => {
   const cookies = req.cookies;
   if (!cookies.jwt) {
-    return res.sendStatus(401);
+    return res.sendStatus(403);
   }
   const refreshToken = cookies.jwt;
   const userWithThisRefreshToken = await userService.getUserByRefreshToken(

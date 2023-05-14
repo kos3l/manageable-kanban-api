@@ -9,7 +9,7 @@ router.get("/user", projectController.getAllUserProjects);
 router.get("/:projectId", projectController.getProjectById);
 
 // route: /api/project/overview/:teamId
-router.get("/overview/:teamId", projectController.getAllProjects);
+router.get("/overview/:teamId", projectController.getAllProjectsTeamProjects);
 
 // route: /api/project
 router.post("/", projectController.createNewProject);

@@ -6,13 +6,12 @@ import { IUpdateColumnDTO } from "../models/dtos/project/IUpdateColumnsDTO";
 import { IUpdateProjectDTO } from "../models/dtos/project/IUpdateProjectDTO";
 import { Project } from "../models/schemas/ProjectSchema";
 import projectValidation from "../validations/ProjectValidation";
-import teamService from "./TeamService";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 
-const getAllProjects = async (teamId: string) => {
+const getAllProjectsTeamProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
 
   if (allProjects && allProjects.length > 0) {
@@ -49,7 +48,6 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
         as: "team",
       },
     },
-
     {
       $project: {
         name: 1,
@@ -329,7 +327,7 @@ const softDeleteOneProject = async (id: string) => {
 
 const projectService = {
   createNewProject,
-  getAllProjects,
+  getAllProjectsTeamProjects,
   getAllUserProjects,
   getProjectById,
   updateOneProject,

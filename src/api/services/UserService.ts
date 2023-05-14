@@ -59,7 +59,7 @@ const removeTeamsFromUser = async (
 ) => {
   const user = await User.updateMany(
     { _id: { $in: ids } },
-    { $pull: { tasks: { $in: teamIds } } },
+    { $pull: { teams: { $in: teamIds } } },
     { session: session, multi: true }
   );
   return user;

@@ -1,5 +1,3 @@
-import { ColumnDocument } from "../../documents/ColumnDocument";
-
 export interface ICreateProjectDTO {
   name: string;
   description?: string;
@@ -7,5 +5,4 @@ export interface ICreateProjectDTO {
   startDate: Date;
   endDate: Date;
   teamId: string;
-  columns: ColumnDocument[];
 }

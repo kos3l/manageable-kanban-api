@@ -59,6 +59,7 @@ const getProjectById = async (req: ExtendedRequest, res: Response) => {
 
   try {
     const oneProject = await projectService.getProjectById(projectId);
+
     if (!oneProject) {
       return res.status(500).send({ message: "Project not found!" });
     }
@@ -140,7 +141,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
     const biggestEndDatetask = await taskService.getTaskWithBiggestEndDate(
-      oneProject.id.toString()
+      oneProject._id.toString()
     );
 
     const newestAllowedDate = biggestEndDatetask
@@ -169,7 +170,7 @@ const updateOneProject = async (req: ExtendedRequest, res: Response) => {
       DateHelper.isDateAftereDate(new Date(), data.endDate) == false
     ) {
       await projectService.updateProjectStatus(
-        oneProject.id.toString(),
+        [oneProject._id.toString()],
         ProjectStatus.ONGOING,
         session
       );
@@ -277,10 +278,10 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
       });
     }
 
-    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn({
-      columnId: columnId,
-      projectId: oneProject.id,
-    });
+    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn(
+      columnId,
+      oneProject.id
+    );
 
     if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {
       const taskIds = tasksOnDeletedColumn.map((task) => task.id);

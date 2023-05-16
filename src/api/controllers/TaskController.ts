@@ -14,6 +14,7 @@ import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 import accessController from "./AccessController";
+
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -36,11 +37,12 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
 };
 // get all overdue tasks from columns id []
 const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
-  const payload: IGetTasksByColumnDTO = req.body;
   const userId = req.user!;
+  const columnId = req.params.columnId;
+  const projectId = req.params.projectId;
 
   try {
-    const oneProject = await projectService.getProjectById(payload.projectId);
+    const oneProject = await projectService.getProjectById(projectId);
     if (!oneProject) {
       return res.status(500).send({ message: "Project not found!" });
     }
@@ -49,7 +51,7 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const allTasks = await taskService.getAllTasksByColumn(payload);
+    const allTasks = await taskService.getAllTasksByColumn(projectId, columnId);
     return res.send(allTasks);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
@@ -134,7 +136,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
     ) {
       await projectService.updateProjectStatus(
-        oneProject.id.toString(),
+        [oneProject._id.toString()],
         ProjectStatus.ONGOING,
         session
       );
@@ -482,15 +484,15 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
       const allUsersOnTask = oneTask.userIds.map((id) => id.toString());
       await userService.removeTasksFromUser(
         allUsersOnTask,
-        [oneTask.id.toString()],
+        [oneTask._id.toString()],
         session
       );
     }
 
     //remove from project's column
     await projectService.removeTaskFromProjectColumn(
-      oneProject.id.toString(),
-      oneTask.id,
+      oneProject._id.toString(),
+      oneTask._id,
       oneTask.columnId.toString(),
       session
     );

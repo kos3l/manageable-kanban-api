@@ -37,6 +37,17 @@ const getUserByEmail = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const getUsersByTeamId = async (req: ExtendedRequest, res: Response) => {
+  try {
+    const teamId = req.params.teamId;
+    const user = await userService.getUsersByTeamId(teamId);
+
+    return res.json(user);
+  } catch (error: any) {
+    return res.status(500).json(error);
+  }
+};
+
 const updateOneUser = async (req: ExtendedRequest, res: Response) => {
   try {
     const userId = req.params.id;
@@ -61,6 +72,7 @@ const userController = {
   getUserByEmail,
   updateOneUser,
   getLoggedInUserProfile,
+  getUsersByTeamId,
 };
 
 export default userController;

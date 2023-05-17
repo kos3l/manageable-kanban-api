@@ -259,9 +259,17 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
+    const taskIds = oneProject.columns
+      .find((col) => col._id.equals(columnId))
+      ?.tasks.map((task) => task._id);
+
+    if (!taskIds) {
+      return res.status(500).send({ message: "Unable to map tasks" });
+    }
+
     const tasksOnDeletedColumn = await taskService.getAllTasksByColumn(
       oneProject._id.toString(),
-      columnId
+      taskIds
     );
 
     if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {

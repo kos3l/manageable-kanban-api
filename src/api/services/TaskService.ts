@@ -14,12 +14,15 @@ const getAllTasksByProjectId = async (projectId: string) => {
   return allTasks;
 };
 
-const getAllTasksByColumn = async (projectId: string, columnId: string) => {
+const getAllTasksByColumn = async (
+  projectId: string,
+  taskIds: mongoose.Types.ObjectId[]
+) => {
   const allTasks = await Task.aggregate([
     {
       $match: {
         projectId: new mongoose.Types.ObjectId(projectId),
-        columnId: new mongoose.Types.ObjectId(columnId),
+        _id: { $in: taskIds },
       },
     },
     {
@@ -30,6 +33,8 @@ const getAllTasksByColumn = async (projectId: string, columnId: string) => {
         as: "users",
       },
     },
+    { $set: { index: { $indexOfArray: [taskIds, "$_id"] } } },
+    { $sort: { index: 1 } },
     {
       $project: {
         title: 1,
@@ -50,6 +55,7 @@ const getAllTasksByColumn = async (projectId: string, columnId: string) => {
       },
     },
   ]);
+
   return allTasks as (mongoose.Document<unknown, {}, TaskDocument> &
     Omit<
       TaskDocument & {

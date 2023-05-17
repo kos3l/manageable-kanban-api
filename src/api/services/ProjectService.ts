@@ -330,8 +330,8 @@ const removeTaskFromProjectColumn = async (
 const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
   const updatedProject = await Project.updateOne(
     {
-      _id: newTaskDto.projectId,
-      "columns._id": newTaskDto.columnId,
+      _id: new mongoose.Types.ObjectId(newTaskDto.projectId),
+      "columns._id": new mongoose.Types.ObjectId(newTaskDto.columnId),
     },
     {
       $set: {

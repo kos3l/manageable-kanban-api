@@ -14,7 +14,6 @@ import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 import accessController from "./AccessController";
-import mongoose from "mongoose";
 
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
@@ -36,7 +35,7 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
     return res.status(500).send({ message: error.message });
   }
 };
-// get all overdue tasks from columns id []
+
 const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
   const userId = req.user!;
   const columnId = req.params.columnId;
@@ -52,7 +51,14 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const allTasks = await taskService.getAllTasksByColumn(projectId, columnId);
+    const taskIds = oneProject.columns
+      .find((col) => col._id.equals(columnId))
+      ?.tasks.map((task) => task._id);
+
+    if (!taskIds) {
+      return res.status(500).send({ message: "Unable to map tasks" });
+    }
+    const allTasks = await taskService.getAllTasksByColumn(projectId, taskIds);
     return res.send(allTasks);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
@@ -240,6 +246,7 @@ const updateTasksOrderInColumn = async (
 
     // make sure there are no duplicates
     data.tasks = [...new Set(data.tasks)];
+
     const updatedProject = await projectService.updateColumnTaskOrder(data);
     if (!updatedProject) {
       return res.status(404).send({

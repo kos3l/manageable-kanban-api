@@ -144,6 +144,7 @@ const updateTeamMembers = async (req: ExtendedRequest, res: Response) => {
     let removedUsers = membersBeforeUpdate?.filter(
       (user) => !teamPayload.users?.find((userId) => user.equals(userId))
     );
+
     if (removedUsers && removedUsers.length > 0) {
       const removed = removedUsers.map((user) => user.toString());
       const isTeamCreatorRemoved = removed.find((userId) =>

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { TaskDocument } from "../models/documents/TaskDocument";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ICreateTaskDTO } from "../models/dtos/task/ICreateTaskDTO";
 import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
@@ -13,12 +14,55 @@ const getAllTasksByProjectId = async (projectId: string) => {
   return allTasks;
 };
 
-const getAllTasksByColumn = async (getTaskDto: IGetTasksByColumnDTO) => {
-  const allTasks = await Task.find({
-    projectId: getTaskDto.projectId,
-    columnId: getTaskDto.columnId,
-  });
-  return allTasks;
+const getAllTasksByColumn = async (
+  projectId: string,
+  taskIds: mongoose.Types.ObjectId[]
+) => {
+  const allTasks = await Task.aggregate([
+    {
+      $match: {
+        projectId: new mongoose.Types.ObjectId(projectId),
+        _id: { $in: taskIds },
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userIds",
+        foreignField: "_id",
+        as: "users",
+      },
+    },
+    { $set: { index: { $indexOfArray: [taskIds, "$_id"] } } },
+    { $sort: { index: 1 } },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        startDate: 1,
+        endDate: 1,
+        columnId: 1,
+        projectId: 1,
+        userIds: 1,
+        createdAt: 1,
+        labels: 1,
+        users: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+        },
+      },
+    },
+  ]);
+
+  return allTasks as (mongoose.Document<unknown, {}, TaskDocument> &
+    Omit<
+      TaskDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >)[];
 };
 
 const getAllTasksForAUserByProject = async (
@@ -33,10 +77,48 @@ const getAllTasksForAUserByProject = async (
 };
 
 const getOneTaskById = async (taskId: string) => {
-  const oneTask = await Task.find({
-    _id: taskId,
-  });
-  return oneTask[0];
+  const task = await Task.aggregate([
+    {
+      $match: {
+        _id: new mongoose.Types.ObjectId(taskId),
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "userIds",
+        foreignField: "_id",
+        as: "users",
+      },
+    },
+    {
+      $project: {
+        title: 1,
+        description: 1,
+        startDate: 1,
+        endDate: 1,
+        columnId: 1,
+        projectId: 1,
+        userIds: 1,
+        createdAt: 1,
+        labels: 1,
+        _v: 1,
+        users: {
+          _id: 1,
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+        },
+      },
+    },
+  ]);
+  return task[0] as mongoose.Document<unknown, {}, TaskDocument> &
+    Omit<
+      TaskDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >;
 };
 
 const getTaskWithBiggestEndDate = async (projectId: string) => {

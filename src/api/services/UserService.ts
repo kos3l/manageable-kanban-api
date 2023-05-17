@@ -23,6 +23,13 @@ const getUserByEmail = async (email: string) => {
   return user;
 };
 
+const getUsersByTeamId = async (teamId: string) => {
+  const user = await User.find({
+    teams: teamId,
+  });
+  return user;
+};
+
 const getUserByRefreshToken = async (refreshToken: string) => {
   const user = await User.findOne({
     refreshToken: refreshToken,
@@ -59,7 +66,7 @@ const removeTeamsFromUser = async (
 ) => {
   const user = await User.updateMany(
     { _id: { $in: ids } },
-    { $pull: { tasks: { $in: teamIds } } },
+    { $pull: { teams: { $in: teamIds } } },
     { session: session, multi: true }
   );
   return user;
@@ -106,6 +113,7 @@ const userService = {
   removeTeamsFromUser,
   addTaskToUser,
   removeTasksFromUser,
+  getUsersByTeamId,
 };
 
 export default userService;

@@ -14,6 +14,7 @@ import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 import accessController from "./AccessController";
+
 const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
   const projectId = req.params.projectId;
   const userId = req.user!;
@@ -34,13 +35,14 @@ const getAllTasksByProjectId = async (req: ExtendedRequest, res: Response) => {
     return res.status(500).send({ message: error.message });
   }
 };
-// get all overdue tasks from columns id []
+
 const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
-  const payload: IGetTasksByColumnDTO = req.body;
   const userId = req.user!;
+  const columnId = req.params.columnId;
+  const projectId = req.params.projectId;
 
   try {
-    const oneProject = await projectService.getProjectById(payload.projectId);
+    const oneProject = await projectService.getProjectById(projectId);
     if (!oneProject) {
       return res.status(500).send({ message: "Project not found!" });
     }
@@ -49,7 +51,14 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const allTasks = await taskService.getAllTasksByColumn(payload);
+    const taskIds = oneProject.columns
+      .find((col) => col._id.equals(columnId))
+      ?.tasks.map((task) => task._id);
+
+    if (!taskIds) {
+      return res.status(500).send({ message: "Unable to map tasks" });
+    }
+    const allTasks = await taskService.getAllTasksByColumn(projectId, taskIds);
     return res.send(allTasks);
   } catch (error: any) {
     return res.status(500).send({ message: error.message });
@@ -134,7 +143,7 @@ const createOneTask = async (req: ExtendedRequest, res: Response) => {
       DateHelper.isDateAftereDate(new Date(), oneProject.startDate)
     ) {
       await projectService.updateProjectStatus(
-        oneProject.id.toString(),
+        [oneProject._id.toString()],
         ProjectStatus.ONGOING,
         session
       );
@@ -237,6 +246,7 @@ const updateTasksOrderInColumn = async (
 
     // make sure there are no duplicates
     data.tasks = [...new Set(data.tasks)];
+
     const updatedProject = await projectService.updateColumnTaskOrder(data);
     if (!updatedProject) {
       return res.status(404).send({
@@ -270,15 +280,19 @@ const addUserToTask = async (req: ExtendedRequest, res: Response) => {
     if (!oneProject) {
       return res.status(500).send({ message: "Project not found!" });
     }
+
     // check if both logged in user and user to be added belong to the team
-    await accessController.verifyIfUserCanAccessTheTeam(
+    const team = await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
-    await accessController.verifyIfUserCanAccessTheTeam(
-      payload.userId,
-      oneProject.teamId.toString()
-    );
+
+    if (!team.users.find((id) => id.equals(payload.userId))) {
+      return res.status(400).send({
+        message:
+          "The user needs to be a part of the team to preview it's projects",
+      });
+    }
 
     let isUserIdsArrayEmpty = false;
     if (oneTask.userIds) {
@@ -343,14 +357,24 @@ const removeUserFromTask = async (req: ExtendedRequest, res: Response) => {
     }
 
     // check if both logged in user and user to be removed belong to the team
-    await accessController.verifyIfUserCanAccessTheTeam(
+    const team = await accessController.verifyIfUserCanAccessTheTeam(
       userId,
       oneProject.teamId.toString()
     );
-    await accessController.verifyIfUserCanAccessTheTeam(
-      payload.userId,
-      oneProject.teamId.toString()
-    );
+
+    if (!team.users.find((id) => id.equals(payload.userId))) {
+      return res.status(400).send({
+        message:
+          "The user needs to be a part of the team to preview it's projects",
+      });
+    }
+
+    let isUserIdsArrayEmpty = false;
+    if (oneTask.userIds) {
+      if (oneTask.userIds.length == 0) {
+        isUserIdsArrayEmpty = true;
+      }
+    }
 
     const updatedTask = await taskService.updateTaskByRemovingUser(
       taskId,
@@ -482,15 +506,15 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
       const allUsersOnTask = oneTask.userIds.map((id) => id.toString());
       await userService.removeTasksFromUser(
         allUsersOnTask,
-        [oneTask.id.toString()],
+        [oneTask._id.toString()],
         session
       );
     }
 
     //remove from project's column
     await projectService.removeTaskFromProjectColumn(
-      oneProject.id.toString(),
-      oneTask.id,
+      oneProject._id.toString(),
+      oneTask._id,
       oneTask.columnId.toString(),
       session
     );

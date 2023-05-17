@@ -10,6 +10,7 @@ import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import { ICreateProjectDTO } from "../models/dtos/project/ICreateProjectDTO";
 import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
+import { ProjectDocument } from "../models/documents/ProjectDocument";
 
 const getAllProjectsTeamProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
@@ -57,6 +58,7 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
         startDate: 1,
         endDate: 1,
         teamId: 1,
+        columns: 1,
         team: {
           _id: 1,
           name: 1,
@@ -85,7 +87,37 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
 };
 
 const getProjectById = async (projectId: string) => {
-  const project = await Project.find({ _id: projectId });
+  const project = await Project.aggregate([
+    // get all projects witht their team info by the user id stored on the team
+    {
+      $match: { _id: new mongoose.Types.ObjectId(projectId) },
+    },
+    {
+      $lookup: {
+        from: "teams",
+        localField: "teamId",
+        foreignField: "_id",
+        as: "team",
+      },
+    },
+    {
+      $project: {
+        name: 1,
+        description: 1,
+        techStack: 1,
+        status: 1,
+        startDate: 1,
+        endDate: 1,
+        teamId: 1,
+        columns: 1,
+        team: {
+          _id: 1,
+          name: 1,
+        },
+      },
+    },
+  ]);
+
   if (project && project.length > 0) {
     const findOverdueProject =
       DateHelper.isDateAftereDate(new Date(), project[0].endDate) &&
@@ -93,14 +125,20 @@ const getProjectById = async (projectId: string) => {
 
     if (findOverdueProject) {
       await projectService.updateProjectStatus(
-        project[0].id.toString(),
+        project[0]._id.toString(),
         ProjectStatus.OVERDUE,
         null
       );
     }
   }
 
-  return project[0];
+  return project[0] as mongoose.Document<unknown, {}, ProjectDocument> &
+    Omit<
+      ProjectDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >;
 };
 
 const createNewProject = async (
@@ -162,6 +200,7 @@ const updateProjectColumns = async (
 const updateOneColumnOrder = async (
   projectId: string,
   updatedColumn: IUpdateColumnOrderDTO,
+  oldColumnOrder: number,
   session: mongoose.mongo.ClientSession | null
 ) => {
   const { error } = projectValidation.updateProjectColumnsOrder(updatedColumn);
@@ -169,35 +208,20 @@ const updateOneColumnOrder = async (
     throw Error(error.details[0].message);
   }
 
-  // Update all columns with order number greater or equal to the order value from body and increment by 1
+  const amountToIncrement = oldColumnOrder < updatedColumn.order ? -1 : 1;
+
   await Project.updateOne(
     {
       _id: projectId,
     },
     {
-      $inc: { "columns.$[elem1].order": 1 },
+      $inc: { "columns.$[elem1].order": amountToIncrement },
     },
     {
       multi: true,
-      arrayFilters: [{ "elem1.order": { $gte: updatedColumn.order } }],
+      arrayFilters: [{ "elem1.order": { $eq: updatedColumn.order } }],
       session: session,
     }
-  );
-
-  // Sort the array of columns on the project
-  await Project.updateOne(
-    {
-      _id: projectId,
-    },
-    {
-      $push: {
-        columns: {
-          $each: [],
-          $sort: { order: 1 },
-        },
-      },
-    },
-    { session: session }
   );
 
   // Update the column from the body payload and change the order value to the new one
@@ -213,6 +237,7 @@ const updateOneColumnOrder = async (
     },
     { session: session }
   );
+
   return updatedProject;
 };
 
@@ -305,8 +330,8 @@ const removeTaskFromProjectColumn = async (
 const updateColumnTaskOrder = async (newTaskDto: IUpdateTaskOrderDTO) => {
   const updatedProject = await Project.updateOne(
     {
-      _id: newTaskDto.projectId,
-      "columns._id": newTaskDto.columnId,
+      _id: new mongoose.Types.ObjectId(newTaskDto.projectId),
+      "columns._id": new mongoose.Types.ObjectId(newTaskDto.columnId),
     },
     {
       $set: {

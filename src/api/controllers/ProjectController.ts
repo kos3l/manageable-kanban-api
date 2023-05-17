@@ -259,7 +259,53 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
       oneProject.teamId.toString()
     );
 
-    const currentColumnsArray = oneProject.columns;
+    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn(
+      oneProject._id.toString(),
+      columnId
+    );
+
+    if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {
+      const taskIds = tasksOnDeletedColumn.map((task) => task._id);
+      const userIdsArray = tasksOnDeletedColumn.map((task) => task.userIds);
+      const userIds = userIdsArray
+        .reduce((acc, val) => {
+          if (acc && acc.length > 0) {
+            return [...acc, ...val];
+          } else {
+            return [...val];
+          }
+        })
+        .map((val) => val._id.toString());
+
+      if (userIds && userIds.length > 0) {
+        const userIDsNoDuplicates = [...new Set(userIds)];
+        await userService.removeTasksFromUser(
+          userIDsNoDuplicates,
+          taskIds.map((id) => id.toString()),
+          session
+        );
+      }
+      await taskService.deleteManyTasks(taskIds);
+    }
+
+    let currentColumnsArray = oneProject.columns;
+    const deletedCol = currentColumnsArray.find((col) =>
+      col._id.equals(columnId)
+    );
+    if (deletedCol) {
+      const itemAfterDeletedCol = currentColumnsArray.find(
+        (col) => col.order > deletedCol.order
+      );
+      if (itemAfterDeletedCol) {
+        currentColumnsArray = currentColumnsArray.map((col) => {
+          if (col.order >= itemAfterDeletedCol.order) {
+            col.order = col.order - 1;
+          }
+          return col;
+        });
+      }
+    }
+
     const newColumnsArray = currentColumnsArray.filter(
       (col) => !col._id.equals(columnId)
     );
@@ -276,35 +322,6 @@ const deleteColumnFromProject = async (req: ExtendedRequest, res: Response) => {
           projectId +
           ". Project was not found",
       });
-    }
-
-    const tasksOnDeletedColumn = await taskService.getAllTasksByColumn(
-      columnId,
-      oneProject.id
-    );
-
-    if (tasksOnDeletedColumn && tasksOnDeletedColumn.length > 0) {
-      const taskIds = tasksOnDeletedColumn.map((task) => task.id);
-      const userIdsArray = tasksOnDeletedColumn.map((task) => task.userIds);
-      const userIds = userIdsArray
-        .reduce((acc, val) => {
-          if (acc && acc.length > 0) {
-            return [...acc, ...val];
-          } else {
-            return [...val];
-          }
-        })
-        .map((val) => val._id.toString());
-
-      if (userIds && userIds.length > 0) {
-        const userIDsNoDuplicates = [...new Set(userIds)];
-        await userService.removeTasksFromUser(
-          userIDsNoDuplicates,
-          taskIds,
-          session
-        );
-      }
-      await taskService.deleteManyTasks(taskIds);
     }
 
     await session.commitTransaction();
@@ -349,6 +366,7 @@ const changeColumnOrderOnProject = async (
     const updatedProject = await projectService.updateOneColumnOrder(
       projectId,
       updatedColumn,
+      columnToBeUpdated.order,
       session
     );
 

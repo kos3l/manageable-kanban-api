@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { TeamDocument } from "../models/documents/TeamDocument";
 import { ICreateTeamDTO } from "../models/dtos/team/ICreateTeamDTO";
 import { ICreateTeamModel } from "../models/dtos/team/model/ICreateTeamModel";
 import { IUpdateTeamModel } from "../models/dtos/team/model/IUpdateTeamModel";
@@ -63,7 +64,13 @@ const getTeamById = async (userId: string, teamId: string) => {
     return null;
   }
 
-  return team[0];
+  return team[0] as mongoose.Document<unknown, {}, TeamDocument> &
+    Omit<
+      TeamDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >;
 };
 
 const createNewTeam = async (

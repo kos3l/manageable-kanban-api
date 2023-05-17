@@ -9,6 +9,7 @@ const verifyIfUserCanAccessTheTeam = async (userId: string, teamId: string) => {
       "The user needs to be a part of the team to preview it's projects"
     );
   }
+  return isUserInTheTeam;
 };
 
 const accessController = {

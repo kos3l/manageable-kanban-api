@@ -58,6 +58,7 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
         startDate: 1,
         endDate: 1,
         teamId: 1,
+        columns: 1,
         team: {
           _id: 1,
           name: 1,
@@ -199,6 +200,7 @@ const updateProjectColumns = async (
 const updateOneColumnOrder = async (
   projectId: string,
   updatedColumn: IUpdateColumnOrderDTO,
+  oldColumnOrder: number,
   session: mongoose.mongo.ClientSession | null
 ) => {
   const { error } = projectValidation.updateProjectColumnsOrder(updatedColumn);
@@ -206,35 +208,20 @@ const updateOneColumnOrder = async (
     throw Error(error.details[0].message);
   }
 
-  // Update all columns with order number greater or equal to the order value from body and increment by 1
+  const amountToIncrement = oldColumnOrder < updatedColumn.order ? -1 : 1;
+
   await Project.updateOne(
     {
       _id: projectId,
     },
     {
-      $inc: { "columns.$[elem1].order": 1 },
+      $inc: { "columns.$[elem1].order": amountToIncrement },
     },
     {
       multi: true,
-      arrayFilters: [{ "elem1.order": { $gte: updatedColumn.order } }],
+      arrayFilters: [{ "elem1.order": { $eq: updatedColumn.order } }],
       session: session,
     }
-  );
-
-  // Sort the array of columns on the project
-  await Project.updateOne(
-    {
-      _id: projectId,
-    },
-    {
-      $push: {
-        columns: {
-          $each: [],
-          $sort: { order: 1 },
-        },
-      },
-    },
-    { session: session }
   );
 
   // Update the column from the body payload and change the order value to the new one
@@ -250,6 +237,7 @@ const updateOneColumnOrder = async (
     },
     { session: session }
   );
+
   return updatedProject;
 };
 

@@ -65,6 +65,24 @@ const getAllTasksByColumn = async (req: ExtendedRequest, res: Response) => {
   }
 };
 
+const getAllTasksByUser = async (req: ExtendedRequest, res: Response) => {
+  const userId = req.user!;
+
+  try {
+    const user = await userService.getUserById(userId, null);
+    if (!user) {
+      return res
+        .status(500)
+        .send({ message: "Unable to find the logged in user" });
+    }
+
+    const allTasks = await taskService.getAllTasksForUser(user.tasks);
+    return res.send(allTasks);
+  } catch (error: any) {
+    return res.status(500).send({ message: error.message });
+  }
+};
+
 const getOneTaskById = async (req: ExtendedRequest, res: Response) => {
   const taskId = req.params.taskId;
   const userId = req.user!;
@@ -532,6 +550,7 @@ const deleteOneTask = async (req: ExtendedRequest, res: Response) => {
 
 const taskController = {
   getAllTasksByProjectId,
+  getAllTasksByUser,
   createOneTask,
   getAllTasksByColumn,
   getOneTaskById,

@@ -8,6 +8,9 @@ router.get("/project/:projectId", taskController.getAllTasksByProjectId);
 // route: /api/task/column
 router.get("/:projectId/column/:columnId", taskController.getAllTasksByColumn);
 
+// route: /api/task/user
+router.get("/user", taskController.getAllTasksByUser);
+
 // route: /api/task/:taskId
 router.get("/:taskId", taskController.getOneTaskById);
 

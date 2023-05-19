@@ -12,6 +12,33 @@ import { ProjectStatus } from "../models/enum/ProjectStatus";
 import { DateHelper } from "../helpers/DateHelper";
 import { ProjectDocument } from "../models/documents/ProjectDocument";
 
+const teamsJoin = {
+  $lookup: {
+    from: "teams",
+    localField: "teamId",
+    foreignField: "_id",
+    as: "team",
+  },
+};
+
+const selectedProperties = {
+  $project: {
+    name: 1,
+    description: 1,
+    techStack: 1,
+    status: 1,
+    startDate: 1,
+    endDate: 1,
+    createdAt: 1,
+    teamId: 1,
+    columns: 1,
+    team: {
+      _id: 1,
+      name: 1,
+    },
+  },
+};
+
 const getAllProjectsTeamProjects = async (teamId: string) => {
   const allProjects = await Project.find({ teamId: teamId });
 
@@ -37,34 +64,11 @@ const getAllProjectsTeamProjects = async (teamId: string) => {
 
 const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
   const allProjects = await Project.aggregate([
-    // get all projects witht their team info by the user id stored on the team
     {
-      $match: { teamId: { $in: allTeamIds } },
+      $match: { teamId: { $in: allTeamIds }, isDeleted: false },
     },
-    {
-      $lookup: {
-        from: "teams",
-        localField: "teamId",
-        foreignField: "_id",
-        as: "team",
-      },
-    },
-    {
-      $project: {
-        name: 1,
-        description: 1,
-        techStack: 1,
-        status: 1,
-        startDate: 1,
-        endDate: 1,
-        teamId: 1,
-        columns: 1,
-        team: {
-          _id: 1,
-          name: 1,
-        },
-      },
-    },
+    teamsJoin,
+    selectedProperties,
   ]);
   if (allProjects && allProjects.length > 0) {
     const findOverdueProjects = allProjects.filter((projects) => {
@@ -88,34 +92,11 @@ const getAllUserProjects = async (allTeamIds: mongoose.Types.ObjectId[]) => {
 
 const getProjectById = async (projectId: string) => {
   const project = await Project.aggregate([
-    // get all projects witht their team info by the user id stored on the team
     {
-      $match: { _id: new mongoose.Types.ObjectId(projectId) },
+      $match: { _id: new mongoose.Types.ObjectId(projectId), isDeleted: false },
     },
-    {
-      $lookup: {
-        from: "teams",
-        localField: "teamId",
-        foreignField: "_id",
-        as: "team",
-      },
-    },
-    {
-      $project: {
-        name: 1,
-        description: 1,
-        techStack: 1,
-        status: 1,
-        startDate: 1,
-        endDate: 1,
-        teamId: 1,
-        columns: 1,
-        team: {
-          _id: 1,
-          name: 1,
-        },
-      },
-    },
+    teamsJoin,
+    selectedProperties,
   ]);
 
   if (project && project.length > 0) {
@@ -350,6 +331,17 @@ const softDeleteOneProject = async (id: string) => {
   return deletedProject;
 };
 
+const softDeleteManyProjects = async (ids: mongoose.Types.ObjectId[]) => {
+  const deletedProject = await Project.updateMany(
+    { _id: { $in: ids } },
+    {
+      isDeleted: true,
+      deletedAt: Date.now(),
+    }
+  );
+  return deletedProject;
+};
+
 const projectService = {
   createNewProject,
   getAllProjectsTeamProjects,
@@ -364,6 +356,7 @@ const projectService = {
   removeTaskFromProjectColumn,
   updateColumnTaskOrder,
   updateProjectStatus,
+  softDeleteManyProjects,
 };
 
 export default projectService;

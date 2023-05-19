@@ -11,6 +11,7 @@ import { IUpdateUserModel } from "../models/dtos/user/model/IUpdateUserModel";
 import teamValidation from "../validations/TeamValidation";
 import taskService from "../services/TaskService";
 import accessController from "./AccessController";
+import projectService from "../services/ProjectService";
 
 const getAllTeams = async (req: ExtendedRequest, res: Response) => {
   const id = req.user!;
@@ -222,8 +223,13 @@ const deleteOneTeam = async (req: ExtendedRequest, res: Response) => {
     });
   }
 
+  const projectsOnTeam = teamToBeDeleted.projects;
+
   try {
     const deletedTeam = await teamService.softDeleteOneTeam(id);
+    if (projectsOnTeam && projectsOnTeam.length > 0) {
+      await projectService.softDeleteManyProjects(projectsOnTeam);
+    }
     if (!deletedTeam) {
       return res.status(404).send({
         message: "Cannot delete team with id=" + id + ". Team was not found",

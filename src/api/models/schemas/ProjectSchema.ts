@@ -114,4 +114,5 @@ projectSchema.pre("find", function () {
 projectSchema.pre("findOne", function () {
   this.where({ isDeleted: false });
 });
+
 export const Project = model<ProjectDocument>("project", projectSchema);

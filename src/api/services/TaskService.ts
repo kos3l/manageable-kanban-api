@@ -2,16 +2,63 @@ import mongoose from "mongoose";
 import { TaskDocument } from "../models/documents/TaskDocument";
 import { ICreateLabelDTO } from "../models/dtos/label/ICreateLabelDTO";
 import { ICreateTaskDTO } from "../models/dtos/task/ICreateTaskDTO";
-import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { ICreateTaskModel } from "../models/dtos/task/model/ICreateTaskModel";
 import { Task } from "../models/schemas/TaskSchema";
 import labelValidation from "../validations/LabelValidation";
 import taskValidation from "../validations/TaskValidation";
 
+const usersJoin = {
+  $lookup: {
+    from: "users",
+    localField: "userIds",
+    foreignField: "_id",
+    as: "users",
+  },
+};
+
+const selectedProperties = {
+  $project: {
+    title: 1,
+    description: 1,
+    startDate: 1,
+    endDate: 1,
+    columnId: 1,
+    projectId: 1,
+    userIds: 1,
+    createdAt: 1,
+    labels: 1,
+    users: {
+      _id: 1,
+      firstName: 1,
+      lastName: 1,
+      email: 1,
+    },
+    project: {
+      _id: 1,
+      isDeleted: 1,
+    },
+  },
+};
+
 const getAllTasksByProjectId = async (projectId: string) => {
-  const allTasks = await Task.find({ projectId: projectId });
-  return allTasks;
+  const allTasks = await Task.aggregate([
+    {
+      $match: {
+        projectId: new mongoose.Types.ObjectId(projectId),
+      },
+    },
+    usersJoin,
+    selectedProperties,
+  ]);
+
+  return allTasks as (mongoose.Document<unknown, {}, TaskDocument> &
+    Omit<
+      TaskDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >)[];
 };
 
 const getAllTasksByColumn = async (
@@ -25,38 +72,49 @@ const getAllTasksByColumn = async (
         _id: { $in: taskIds },
       },
     },
-    {
-      $lookup: {
-        from: "users",
-        localField: "userIds",
-        foreignField: "_id",
-        as: "users",
-      },
-    },
+    usersJoin,
     { $set: { index: { $indexOfArray: [taskIds, "$_id"] } } },
     { $sort: { index: 1 } },
-    {
-      $project: {
-        title: 1,
-        description: 1,
-        startDate: 1,
-        endDate: 1,
-        columnId: 1,
-        projectId: 1,
-        userIds: 1,
-        createdAt: 1,
-        labels: 1,
-        users: {
-          _id: 1,
-          firstName: 1,
-          lastName: 1,
-          email: 1,
-        },
-      },
-    },
+    selectedProperties,
   ]);
 
   return allTasks as (mongoose.Document<unknown, {}, TaskDocument> &
+    Omit<
+      TaskDocument & {
+        _id: mongoose.Types.ObjectId;
+      },
+      never
+    >)[];
+};
+
+const getAllTasksForUser = async (taskIds: mongoose.Types.ObjectId[]) => {
+  const allTasks = await Task.aggregate([
+    {
+      $match: {
+        _id: { $in: taskIds },
+      },
+    },
+    usersJoin,
+    {
+      $lookup: {
+        from: "projects",
+        localField: "projectId",
+        foreignField: "_id",
+        as: "project",
+      },
+    },
+    selectedProperties,
+  ]);
+
+  const notasksFromDeletedProjects = allTasks.filter(
+    (task) => task.project[0].isDeleted == false
+  );
+
+  return notasksFromDeletedProjects as (mongoose.Document<
+    unknown,
+    {},
+    TaskDocument
+  > &
     Omit<
       TaskDocument & {
         _id: mongoose.Types.ObjectId;
@@ -83,34 +141,8 @@ const getOneTaskById = async (taskId: string) => {
         _id: new mongoose.Types.ObjectId(taskId),
       },
     },
-    {
-      $lookup: {
-        from: "users",
-        localField: "userIds",
-        foreignField: "_id",
-        as: "users",
-      },
-    },
-    {
-      $project: {
-        title: 1,
-        description: 1,
-        startDate: 1,
-        endDate: 1,
-        columnId: 1,
-        projectId: 1,
-        userIds: 1,
-        createdAt: 1,
-        labels: 1,
-        _v: 1,
-        users: {
-          _id: 1,
-          firstName: 1,
-          lastName: 1,
-          email: 1,
-        },
-      },
-    },
+    usersJoin,
+    selectedProperties,
   ]);
   return task[0] as mongoose.Document<unknown, {}, TaskDocument> &
     Omit<
@@ -285,6 +317,7 @@ const deleteManyTasks = async (taskIds: mongoose.Types.ObjectId[]) => {
 
 const taskService = {
   getAllTasksByProjectId,
+  getAllTasksForUser,
   createOneTask,
   getAllTasksByColumn,
   getOneTaskById,

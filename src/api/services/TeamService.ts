@@ -45,6 +45,7 @@ const getTeamById = async (userId: string, teamId: string) => {
           _id: 1,
           name: 1,
           status: 1,
+          isDeleted: 1,
         },
         userModels: {
           _id: 1,
@@ -56,21 +57,30 @@ const getTeamById = async (userId: string, teamId: string) => {
       },
     },
   ]);
-  if (
-    team &&
-    !team[0].createdBy.equals(userId) &&
-    !team[0].users.includes(new mongoose.Types.ObjectId(userId))
-  ) {
-    return null;
-  }
 
-  return team[0] as mongoose.Document<unknown, {}, TeamDocument> &
+  const fetchedTeam = team[0] as mongoose.Document<unknown, {}, TeamDocument> &
     Omit<
       TeamDocument & {
         _id: mongoose.Types.ObjectId;
       },
       never
     >;
+
+  if (
+    fetchedTeam &&
+    !fetchedTeam.createdBy.equals(userId) &&
+    !fetchedTeam.users.includes(new mongoose.Types.ObjectId(userId))
+  ) {
+    return null;
+  }
+
+  if (fetchedTeam.projectModels && fetchedTeam.projectModels.length > 0) {
+    fetchedTeam.projectModels = fetchedTeam.projectModels.filter(
+      (project) => project.isDeleted == false
+    );
+  }
+
+  return fetchedTeam;
 };
 
 const createNewTeam = async (

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { ProjectStatus } from "../enum/ProjectStatus";
 import { ColumnDocument } from "./ColumnDocument";
+import { TeamDocument } from "./TeamDocument";
 
 export interface ProjectDocument {
   id: string;
@@ -14,4 +15,5 @@ export interface ProjectDocument {
   columns: ColumnDocument[];
   isDeleted: boolean;
   deletedAt?: Date;
+  team?: TeamDocument[];
 }

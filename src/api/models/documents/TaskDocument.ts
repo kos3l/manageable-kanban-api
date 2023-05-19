@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 import { LabelDocument } from "./LabelDocument";
+import { ProjectDocument } from "./ProjectDocument";
+import { UserDocument } from "./UserDocument";
 
 export interface TaskDocument {
   id: string;
@@ -12,4 +14,6 @@ export interface TaskDocument {
   projectId: mongoose.Types.ObjectId;
   userIds: mongoose.Types.ObjectId[];
   labels?: LabelDocument[];
+  project?: ProjectDocument[];
+  users?: UserDocument[];
 }

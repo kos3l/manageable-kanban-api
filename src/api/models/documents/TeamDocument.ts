@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+import { ProjectDocument } from "./ProjectDocument";
+import { UserDocument } from "./UserDocument";
 
 export interface TeamDocument {
   id: string;
@@ -10,4 +12,6 @@ export interface TeamDocument {
   projects?: mongoose.Types.ObjectId[];
   isDeleted: boolean;
   deletedAt?: Date;
+  projectModels?: ProjectDocument[];
+  userModels?: UserDocument[];
 }

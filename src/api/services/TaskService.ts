@@ -37,6 +37,7 @@ const selectedProperties = {
     project: {
       _id: 1,
       isDeleted: 1,
+      status: 1,
     },
   },
 };

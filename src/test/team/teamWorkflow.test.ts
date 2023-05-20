@@ -192,6 +192,8 @@ describe("Team workflow tests - Happy scenarios", () => {
               .send(updatedTeam)
               .end((err, res) => {
                 should().exist(res);
+                console.log(res.body);
+                console.log(res.error);
                 res.should.have.status(200);
 
                 // Get team by id

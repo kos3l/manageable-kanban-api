@@ -58,7 +58,7 @@ const getTeamById = async (userId: string, teamId: string) => {
     },
   ]);
 
-  const fetchedTeam = team[0] as mongoose.Document<unknown, {}, TeamDocument> &
+  let fetchedTeam = team[0] as mongoose.Document<unknown, {}, TeamDocument> &
     Omit<
       TeamDocument & {
         _id: mongoose.Types.ObjectId;
@@ -66,10 +66,7 @@ const getTeamById = async (userId: string, teamId: string) => {
       never
     >;
 
-  if (
-    fetchedTeam &&
-    !fetchedTeam.users.includes(new mongoose.Types.ObjectId(userId))
-  ) {
+  if (fetchedTeam && !fetchedTeam.users.find((user) => user.equals(userId))) {
     return null;
   }
 

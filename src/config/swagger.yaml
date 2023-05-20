@@ -1010,9 +1010,9 @@ paths:
       tags:
         - project
       parameters:
-        - name: projectId
+        - name: teamId
           in: path
-          description: Project ID
+          description: Team ID
           required: true
           schema:
             type: string
@@ -1157,7 +1157,7 @@ paths:
                   message:
                     type: string
 
-  project/{projectId}/complete:
+  /project/{projectId}/complete:
     put:
       summary: Complete a project
       description: Update the projects status to Completed
@@ -1183,7 +1183,7 @@ paths:
                   message:
                     type: string
 
-  token/refresh:
+  /token/refresh:
     get:
       summary: New refresh token
       description: Updates users refresh token with a new one and sends back a new acessToken
@@ -1202,7 +1202,7 @@ paths:
                   newAccessToken:
                     type: string
 
-  task/project/{projectId}:
+  /task/project/{projectId}:
     get:
       summary: All tasks by project ID
       description: Gets all tasks from all columns on a project
@@ -1256,7 +1256,7 @@ paths:
                 type: object
                 $ref: "#/components/schemas/Task"
 
-  task/{projectId}/column/{columnId}:
+  /task/{projectId}/column/{columnId}:
     get:
       summary: All tasks on the specific column of a Project
       description: Gets all tasks from one columns on a project
@@ -1287,7 +1287,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Task"
 
-  task/user:
+  /task/user:
     get:
       summary: All user tasks
       description: Gets all tasks the user is assigned to
@@ -1305,7 +1305,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/Task"
 
-  task/{taskId}:
+  /task/{taskId}:
     get:
       summary: Task by ID
       description: Gets one task by ID
@@ -1385,7 +1385,7 @@ paths:
                   message:
                     type: string
 
-  task/column/order:
+  /task/column/order:
     put:
       summary: Updates the task order
       description: Updates the order of tasks on a column
@@ -1411,7 +1411,7 @@ paths:
                   message:
                     type: string
 
-  task/{taskId}/AddUser:
+  /task/{taskId}/AddUser:
     put:
       summary: Add user to task
       description: Adds one user to a task
@@ -1444,7 +1444,7 @@ paths:
                   message:
                     type: string
 
-  task/{taskId}/RemoveUser:
+  /task/{taskId}/RemoveUser:
     put:
       summary: Remove user from task
       description: Removes one user from a task
@@ -1477,7 +1477,7 @@ paths:
                   message:
                     type: string
 
-  task/{taskId}/AddLabel:
+  /task/{taskId}/AddLabel:
     put:
       summary: Add a label to a task
       description: Creates a new label and adds it to the tasks label array
@@ -1510,7 +1510,7 @@ paths:
                   message:
                     type: string
 
-  task/{taskId}/RemoveLabel/{labelId}:
+  /task/{taskId}/RemoveLabel/{labelId}:
     put:
       summary: Remove a label to a task
       description: Creates a new label and adds it to the tasks label array

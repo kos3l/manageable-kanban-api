@@ -16,7 +16,6 @@ let taskSchema = new Schema<TaskDocument>(
       minlength: 3,
       maxlength: 1056,
     },
-    // will be updated
     picture: {
       type: String,
       required: false,

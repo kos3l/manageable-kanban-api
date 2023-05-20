@@ -4,7 +4,6 @@ import { ExtendedRequest } from "../models/util/IExtendedRequest";
 import projectService from "../services/ProjectService";
 import taskService from "../services/TaskService";
 import { conn } from "../../server";
-import { IGetTasksByColumnDTO } from "../models/dtos/task/IGetTasksByColumnDTO";
 import { IUpdateTaskDTO } from "../models/dtos/task/IUpdateTaskDTO";
 import { IUpdateTaskOrderDTO } from "../models/dtos/task/IUpdateTaskOrderDTO";
 import projectValidation from "../validations/ProjectValidation";

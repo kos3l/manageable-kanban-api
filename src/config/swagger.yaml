@@ -41,6 +41,12 @@ components:
           type: array
           items:
             type: string
+        tasks:
+          type: array
+          items:
+            type: string
+        refreshToken:
+          type: string
         createdAt:
           type: string
           format: date-time
@@ -55,6 +61,7 @@ components:
         - password
         - birthdate
         - teams
+        - tasks
 
     Team:
       type: object
@@ -62,6 +69,8 @@ components:
         id:
           type: string
         name:
+          type: string
+        description:
           type: string
         picture:
           type: string
@@ -90,7 +99,7 @@ components:
         - id
         - name
         - createdBy
-        - user
+        - users
         - isDeleted
         - createdAt
         - updatedAt
@@ -112,7 +121,7 @@ components:
           type: array
           items:
             type: number
-            enum: [1, 2, 3]
+            enum: [0, 1, 2, 3]
         startDate:
           type: string
           format: date-time
@@ -131,6 +140,11 @@ components:
         updatedAt:
           type: string
           format: date-time
+        isDeleted:
+          type: boolean
+        deletedAt:
+          type: string
+          format: date-time
       required:
         - id
         - name
@@ -142,6 +156,7 @@ components:
         - teamId
         - createdAt
         - updatedAt
+        - isDeleted
 
     Label:
       type: object
@@ -184,6 +199,12 @@ components:
           type: string
         columnId:
           type: string
+        projectId:
+          type: string
+        userIds:
+          type: array
+          items:
+            type: string
         labels:
           type: array
           items:
@@ -200,6 +221,8 @@ components:
         - startDate
         - endDate
         - columnId
+        - projectId
+        - userIds
         - createdAt
         - updatedAt
 
@@ -214,6 +237,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Task"
+        order:
+          type: number
         createdAt:
           type: string
           format: date-time
@@ -224,6 +249,7 @@ components:
         - id
         - name
         - tasks
+        - order
         - createdAt
         - updatedAt
 
@@ -291,36 +317,233 @@ components:
         birthdate:
           type: string
           format: date-time
-        teams:
-          type: array
-          items:
-            type: string
+
+    IUpdateUserRefreshToken:
+      type: object
+      properties:
+        refreshToken:
+          type: string
 
     ICreateTeamDTO:
       type: object
       properties:
         name:
           type: string
-        createdBy:
+          minLength: 2
+          maxLength: 255
+        description:
           type: string
-        users:
-          type: array
-          items:
-            type: string
+          minLength: 3
+          maxLength: 1056
       required:
         - name
-        - createdBy
-        - users
+        - description
 
     IUpdateTeamDTO:
       type: object
       properties:
         name:
           type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1056
+      required:
+        - name
+
+    IUpdateTeamProjectsDTO:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 200
+      required:
+        - projects
+
+    IUpdateTeamUsersDTO:
+      type: object
+      properties:
         users:
           type: array
           items:
             type: string
+          minItems: 1
+          maxItems: 20
+      required:
+        - users
+
+    ICreateProjectDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          minLength: 3
+          maxLength: 255
+        techStack:
+          type: array
+          items:
+            type: string
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        teamId:
+          type: string
+      required:
+        - name
+        - techStack
+        - startDate
+        - endDate
+        - teamId
+
+    IUpdateProjectDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          minLength: 3
+          maxLength: 255
+        techStack:
+          type: array
+          items:
+            type: string
+        endDate:
+          type: string
+          format: date-time
+
+    ICreateColumnDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+      required:
+        - name
+
+    IUpdateColumnDTO:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+      required:
+        - id
+        - name
+
+    IUpdateColumnOrderDTO:
+      type: object
+      properties:
+        columnId:
+          type: string
+        order:
+          type: number
+          minLength: 0
+          maxLength: 300
+      required:
+        - columnId
+        - order
+
+    ICreateTaskDTO:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1056
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+        columnId:
+          type: string
+      required:
+        - title
+        - startDate
+        - endDate
+        - columnId
+
+    IUpdateTaskDTO:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 2
+          maxLength: 255
+        description:
+          type: string
+          minLength: 3
+          maxLength: 1056
+        startDate:
+          type: string
+          format: date-time
+        endDate:
+          type: string
+          format: date-time
+
+    IUpdateTaskOrderDTO:
+      type: object
+      properties:
+        columnId:
+          type: string
+        projectId:
+          type: string
+        tasks:
+          type: array
+          items:
+            type: string
+      required:
+        - columnId
+        - projectId
+        - tasks
+
+    IUpdateUserToTask:
+      type: object
+      properties:
+        userId:
+          type: string
+      required:
+        - userId
+
+    ICreateLabelDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 2
+          maxLength: 255
+        color:
+          type: string
+          minLength: 3
+          maxLength: 24
+      required:
+        - name
+        - color
+
 paths:
   /auth/register:
     post:
@@ -371,12 +594,18 @@ paths:
               schema:
                 type: object
                 properties:
-                  error:
+                  accessToken:
                     type: string
-                  data:
-                    type: array
-                    items:
-                      type: string
+
+  /auth/logout:
+    get:
+      summary: Logs User out
+      description: Removes user jwt token cookie
+      tags:
+        - auth
+      responses:
+        204:
+          description: User logged out succesfully
 
   /user/{id}:
     get:
@@ -422,7 +651,7 @@ paths:
           schema:
             type: string
       responses:
-        201:
+        200:
           description: Success message
           content:
             application/json:
@@ -432,7 +661,7 @@ paths:
                   message:
                     type: string
 
-  /user/email:
+  /user/email/{email}:
     get:
       summary: Gets User by email
       description: Get the individual user that exists in the system.
@@ -440,14 +669,13 @@ paths:
         - ApiKeyAuth: []
       tags:
         - user
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              email:
-                type: string
-                format: email
+      parameters:
+        - name: email
+          in: path
+          description: Users email
+          required: true
+          schema:
+            type: string
 
       responses:
         200:
@@ -458,6 +686,48 @@ paths:
                 type: object
                 $ref: "#/components/schemas/User"
 
+  /user/team/{teamId}:
+    get:
+      summary: Gets Users by Team ID
+      description: Get users that exists in the system.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - user
+      parameters:
+        - name: teamId
+          in: path
+          description: Users teamId
+          required: true
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: Requested users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /user/profile:
+    get:
+      summary: Gets Logged in user
+      description: Full information about the logged in user based on the accessToken
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - user
+      responses:
+        200:
+          description: Requested user
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/User"
   /team:
     get:
       summary: Gets all teams
@@ -515,7 +785,7 @@ paths:
             type: string
       responses:
         200:
-          description: Array of teams which have not been marked as deleted.
+          description: Single requested Team.
           content:
             application/json:
               schema:
@@ -542,7 +812,7 @@ paths:
             schema:
               $ref: "#/components/schemas/IUpdateTeamDTO"
       responses:
-        201:
+        200:
           description: Updated team
           content:
             application/json:
@@ -566,7 +836,7 @@ paths:
           schema:
             type: string
       responses:
-        201:
+        200:
           description: Soft deleted the team
           content:
             application/json:
@@ -596,10 +866,674 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/IUpdateTeamDTO"
+              $ref: "#/components/schemas/IUpdateTeamUsersDTO"
       responses:
-        201:
+        200:
           description: Updated team
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /project:
+    post:
+      summary: Creates a new Project
+      description: Add a new Project.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/ICreateProjectDTO"
+      responses:
+        200:
+          description: New Project
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Project"
+
+  /project/user:
+    get:
+      summary: Gets all user projects
+      description: All projects that the user can access.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+
+      responses:
+        200:
+          description: All projects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Project"
+
+  /project/{projectId}:
+    get:
+      summary: Get project by id
+      description: One project and all it's information.
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: One project
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Project"
+    put:
+      summary: Update one project
+      description: Updates projects basic information
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateProjectDTO"
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    delete:
+      summary: Soft deleted a project
+      description: Updated projects IsDeleted property to true thus making it not fetchable
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Deleted project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /project/overview/{teamId}:
+    get:
+      summary: Get all projects for a team
+      description: List of projects by team id
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+
+      responses:
+        200:
+          description: One project
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Project"
+
+  /project/{projectId}/AddColumn:
+    put:
+      summary: New kanban column
+      description: Creates a new kanban column on the project
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/ICreateColumnDTO"
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /project/{projectId}/DeleteColumn/{columnId}:
+    put:
+      summary: Removes a column
+      description: Removes a column from the projects kanban
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+        - name: columnId
+          in: path
+          description: Column ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /project/{projectId}/ChangeColumnOrder:
+    put:
+      summary: Updates order of columns
+      description: Updates the order of columns on the project
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateColumnOrderDTO"
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /project/{projectId}/column:
+    put:
+      summary: Updates a column on the project
+      description: Update one columns basic information
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateColumnDTO"
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  project/{projectId}/complete:
+    put:
+      summary: Complete a project
+      description: Update the projects status to Completed
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - project
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  token/refresh:
+    get:
+      summary: New refresh token
+      description: Updates users refresh token with a new one and sends back a new acessToken
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - token
+      responses:
+        200:
+          description: new Access token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  newAccessToken:
+                    type: string
+
+  task/project/{projectId}:
+    get:
+      summary: All tasks by project ID
+      description: Gets all tasks from all columns on a project
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: All tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+    post:
+      summary: Create one Task
+      description: Creates a new task on a project
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/ICreateTaskDTO"
+      responses:
+        200:
+          description: New Task
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Task"
+
+  task/{projectId}/column/{columnId}:
+    get:
+      summary: All tasks on the specific column of a Project
+      description: Gets all tasks from one columns on a project
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: projectId
+          in: path
+          description: Project ID
+          required: true
+          schema:
+            type: string
+        - name: columnId
+          in: path
+          description: Column ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: All tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  task/user:
+    get:
+      summary: All user tasks
+      description: Gets all tasks the user is assigned to
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      responses:
+        200:
+          description: All tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+
+  task/{taskId}:
+    get:
+      summary: Task by ID
+      description: Gets one task by ID
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: One task
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/Task"
+
+    put:
+      summary: Update one Task
+      description: Update a Task's basic information
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateTaskDTO"
+      responses:
+        200:
+          description: Updated a task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+    delete:
+      summary: Deletes One Task
+      description: Hard deletes a task and all its relations to other entities
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Deleted a task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  task/column/order:
+    put:
+      summary: Updates the task order
+      description: Updates the order of tasks on a column
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateTaskOrderDTO"
+      responses:
+        200:
+          description: Updated tasks order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  task/{taskId}/AddUser:
+    put:
+      summary: Add user to task
+      description: Adds one user to a task
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateUserToTask"
+      responses:
+        200:
+          description: Updated a task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  task/{taskId}/RemoveUser:
+    put:
+      summary: Remove user from task
+      description: Removes one user from a task
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/IUpdateUserToTask"
+      responses:
+        200:
+          description: Updated a task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  task/{taskId}/AddLabel:
+    put:
+      summary: Add a label to a task
+      description: Creates a new label and adds it to the tasks label array
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              $ref: "#/components/schemas/ICreateLabelDTO"
+      responses:
+        200:
+          description: Updated a task
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  task/{taskId}/RemoveLabel/{labelId}:
+    put:
+      summary: Remove a label to a task
+      description: Creates a new label and adds it to the tasks label array
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - task
+      parameters:
+        - name: taskId
+          in: path
+          description: Task ID
+          required: true
+          schema:
+            type: string
+        - name: labelId
+          in: path
+          description: Label ID
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Updated a task
           content:
             application/json:
               schema:

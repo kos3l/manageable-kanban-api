@@ -54,7 +54,7 @@ const updateProjectColumnsOrder = (data: IUpdateColumnOrderDTO) => {
 const updateProjectColumn = (data: IUpdateColumnDTO) => {
   const schema = Joi.object({
     id: Joi.string().min(2).max(255).required(),
-    name: Joi.string().min(2).max(300).required(),
+    name: Joi.string().min(2).max(255).required(),
   });
   return schema.validate(data);
 };

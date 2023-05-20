@@ -19,7 +19,6 @@ let teamSchema = new Schema<TeamDocument>(
       type: Schema.Types.ObjectId,
       required: true,
     },
-    // will be updated
     picture: {
       type: String,
       required: false,

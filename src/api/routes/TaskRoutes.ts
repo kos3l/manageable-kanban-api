@@ -5,7 +5,7 @@ const router = express.Router();
 // route: /api/task/project/:projectId
 router.get("/project/:projectId", taskController.getAllTasksByProjectId);
 
-// route: /api/task/column
+// route: /api/task/:projectId/column/:columnId
 router.get("/:projectId/column/:columnId", taskController.getAllTasksByColumn);
 
 // route: /api/task/user

@@ -8,7 +8,7 @@ import teamValidation from "../validations/TeamValidation";
 import userService from "./UserService";
 
 const getAllTeams = async (userId: string) => {
-  const allTeams = await Team.find({ createdBy: userId });
+  const allTeams = await Team.find({ users: userId });
   return allTeams;
 };
 

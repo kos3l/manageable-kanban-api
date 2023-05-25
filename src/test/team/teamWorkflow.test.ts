@@ -276,25 +276,24 @@ describe("Team workflow tests - Happy scenarios", () => {
                           .to.eql(updatedTeamMembersArray);
                         res.body.users.length.should.be.eql(2);
 
-                        // Add this once the User routes are in
-                        // chai
-                        //   .request(app)
-                        //   .get("/api/auth/" + user2Id)
-                        //   .set({ "auth-token": token })
-                        //   .end((err, res) => {
-                        //     should().exist(res);
-                        //     res.should.have.status(200);
-                        //     res.body.should.be.a("object");
-                        //     expect(res.body)
-                        //       .to.have.property("teams")
-                        //       .that.is.a("array");
-                        //     expect(res.body)
-                        //       .to.have.property("teams")
-                        //       .to.include(teamId);
-                        //     res.body.teams.length.should.be.eql(2);
+                        chai
+                          .request(app)
+                          .get("/api/user/" + user2Id)
+                          .set({ "auth-token": token })
+                          .end((err, res) => {
+                            should().exist(res);
+                            res.should.have.status(200);
+                            res.body.should.be.a("object");
+                            expect(res.body)
+                              .to.have.property("teams")
+                              .that.is.a("array");
+                            expect(res.body)
+                              .to.have.property("teams")
+                              .to.include(teamId);
+                            res.body.teams.length.should.be.eql(2);
 
-                        done();
-                        // });
+                            done();
+                          });
                       });
                   });
               });
@@ -388,7 +387,24 @@ describe("Team workflow tests - Happy scenarios", () => {
                                   .to.eql([user1Id]);
                                 res.body.users.length.should.be.eql(1);
 
-                                done();
+                                chai
+                                  .request(app)
+                                  .get("/api/user/" + user2Id)
+                                  .set({ "auth-token": token })
+                                  .end((err, res) => {
+                                    should().exist(res);
+                                    res.should.have.status(200);
+                                    res.body.should.be.a("object");
+                                    expect(res.body)
+                                      .to.have.property("teams")
+                                      .that.is.a("array");
+                                    expect(res.body)
+                                      .to.have.property("teams")
+                                      .to.not.include(teamId);
+                                    res.body.teams.length.should.be.eql(1);
+
+                                    done();
+                                  });
                               });
                           });
                       });
@@ -461,6 +477,9 @@ describe("Team workflow tests - Happy scenarios", () => {
                             expect(res.body[0])
                               .to.have.property("_id")
                               .equal(teamId);
+                            expect(res.body[0])
+                              .to.have.property("isDeleted")
+                              .equal(true);
 
                             done();
                           });
@@ -471,6 +490,7 @@ describe("Team workflow tests - Happy scenarios", () => {
       });
   });
 });
+
 describe("Team workflow tests - Fail scenarios", () => {
   // Mock data
   let user1 = {
@@ -1009,6 +1029,9 @@ describe("Team workflow tests - Fail scenarios", () => {
                             expect(res.body[0])
                               .to.have.property("_id")
                               .equal(teamIdUser2);
+                            expect(res.body[0])
+                              .to.have.property("isDeleted")
+                              .equal(false);
 
                             done();
                           });

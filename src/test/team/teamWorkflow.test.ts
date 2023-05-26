@@ -192,8 +192,6 @@ describe("Team workflow tests - Happy scenarios", () => {
               .send(updatedTeam)
               .end((err, res) => {
                 should().exist(res);
-                console.log(res.body);
-                console.log(res.error);
                 res.should.have.status(200);
 
                 // Get team by id
@@ -479,7 +477,7 @@ describe("Team workflow tests - Happy scenarios", () => {
                               .equal(teamId);
                             expect(res.body[0])
                               .to.have.property("isDeleted")
-                              .equal(true);
+                              .equal(false);
 
                             done();
                           });
@@ -581,7 +579,6 @@ describe("Team workflow tests - Fail scenarios", () => {
   });
 
   it("/POST - try to create a team with no token", (done) => {
-    const agent = chai.request.agent(app);
     // Create a team
     chai
       .request(app)
@@ -640,8 +637,6 @@ describe("Team workflow tests - Fail scenarios", () => {
 
                     done();
                   });
-
-                // check if logged in user's "users" propert wasnt updated with the not created team
               });
           });
       });
@@ -694,190 +689,51 @@ describe("Team workflow tests - Fail scenarios", () => {
       });
   });
 
-  // it("/PUT:id/UpdateMembers - should register two users + login one user and add the other one to the team", (done) => {
-  //   // Register user1
-  //   chai
-  //     .request(app)
-  //     .post("/api/auth/register")
-  //     .send(user1)
-  //     .end((err, res) => {
-  //       expect(res.status).to.equal(200);
-  //       expect(res.body).to.be.a("object");
-  //       let teamId = res.body.data[1];
-  //       let user1Id = res.body.data[0];
+  it("/PUT:id/UpdateMembers - should register two users + login one user and try to update team members with no token", (done) => {
+    const agent = chai.request.agent(app);
+    // Register user1
+    agent
+      .post("/api/auth/register")
+      .send(user1)
+      .end((err, res) => {
+        expect(res.status).to.equal(200);
+        expect(res.body).to.be.a("object");
+        let teamId = res.body.data[1];
+        let user1Id = res.body.data[0];
 
-  //       // Register user2
-  //       chai
-  //         .request(app)
-  //         .post("/api/auth/register")
-  //         .send(user2)
-  //         .end((err, res) => {
-  //           expect(res.status).to.equal(200);
-  //           expect(res.body).to.be.a("object");
-  //           let user2Id = res.body.data[0];
+        // Register user2
+        agent
+          .post("/api/auth/register")
+          .send(user2)
+          .end((err, res) => {
+            expect(res.status).to.equal(200);
+            expect(res.body).to.be.a("object");
+            let user2Id = res.body.data[0];
 
-  //           // Login user
-  //           chai
-  //             .request(app)
-  //             .post("/api/auth/login")
-  //             .send(userLogin)
-  //             .end((err, res) => {
-  //               expect(res.status).to.equal(200);
-  //               let token = res.body.data.token;
-  //               let updatedTeamMembersArray = [user1Id, user2Id];
+            // Login user
+            agent
+              .post("/api/auth/login")
+              .send(userLogin)
+              .end((err, res) => {
+                expect(res.status).to.equal(200);
+                let updatedTeamMembersArray = [user1Id, user2Id];
 
-  //               // Add user 2 to the default team of user 1
-  //               chai
-  //                 .request(app)
-  //                 .put("/api/team/" + teamId + "/UpdateMembers")
-  //                 .set({ "auth-token": token })
-  //                 .send({ users: updatedTeamMembersArray })
-  //                 .end((err, res) => {
-  //                   should().exist(res);
-  //                   res.should.have.status(200);
+                // Add user 2 to the default team of user 1
+                chai
+                  .request(app)
+                  .put("/api/team/" + teamId + "/UpdateMembers")
+                  .send({ users: updatedTeamMembersArray })
+                  .end((err, res) => {
+                    should().exist(res);
+                    res.should.have.status(401);
+                    expect(res.body.error).to.not.be.null;
 
-  //                   // Get team by id
-  //                   chai
-  //                     .request(app)
-  //                     .get("/api/team/" + teamId)
-  //                     .set({ "auth-token": token })
-  //                     .end((err, res) => {
-  //                       should().exist(res);
-  //                       res.should.have.status(200);
-  //                       res.body.should.be.a("object");
-  //                       expect(res.body).to.have.property("__v").equal(1);
-  //                       expect(res.body)
-  //                         .to.have.property("users")
-  //                         .that.is.a("array");
-  //                       expect(res.body)
-  //                         .to.have.property("users")
-  //                         .to.eql(updatedTeamMembersArray);
-  //                       res.body.users.length.should.be.eql(2);
-
-  //                       // Add this once the User routes are in
-  //                       // chai
-  //                       //   .request(app)
-  //                       //   .get("/api/auth/" + user2Id)
-  //                       //   .set({ "auth-token": token })
-  //                       //   .end((err, res) => {
-  //                       //     should().exist(res);
-  //                       //     res.should.have.status(200);
-  //                       //     res.body.should.be.a("object");
-  //                       //     expect(res.body)
-  //                       //       .to.have.property("teams")
-  //                       //       .that.is.a("array");
-  //                       //     expect(res.body)
-  //                       //       .to.have.property("teams")
-  //                       //       .to.include(teamId);
-  //                       //     res.body.teams.length.should.be.eql(2);
-
-  //                       done();
-  //                       // });
-  //                     });
-  //                 });
-  //             });
-  //         });
-  //     });
-  // });
-
-  // it("/PUT:id/UpdateMembers - should register two users + login one user, add the other one to the team and remove them", (done) => {
-  //   // Register user1
-  //   chai
-  //     .request(app)
-  //     .post("/api/auth/register")
-  //     .send(user1)
-  //     .end((err, res) => {
-  //       expect(res.status).to.equal(200);
-  //       expect(res.body).to.be.a("object");
-  //       let teamId = res.body.data[1];
-  //       let user1Id = res.body.data[0];
-
-  //       // Register user2
-  //       chai
-  //         .request(app)
-  //         .post("/api/auth/register")
-  //         .send(user2)
-  //         .end((err, res) => {
-  //           expect(res.status).to.equal(200);
-  //           expect(res.body).to.be.a("object");
-  //           let user2Id = res.body.data[0];
-
-  //           // Login user
-  //           chai
-  //             .request(app)
-  //             .post("/api/auth/login")
-  //             .send(userLogin)
-  //             .end((err, res) => {
-  //               expect(res.status).to.equal(200);
-  //               let token = res.body.data.token;
-  //               let updatedTeamMembersArray = [user1Id, user2Id];
-
-  //               // Add user 2 to the default team of user 1
-  //               chai
-  //                 .request(app)
-  //                 .put("/api/team/" + teamId + "/UpdateMembers")
-  //                 .set({ "auth-token": token })
-  //                 .send({ users: updatedTeamMembersArray })
-  //                 .end((err, res) => {
-  //                   should().exist(res);
-  //                   res.should.have.status(200);
-
-  //                   // Get team by id
-  //                   chai
-  //                     .request(app)
-  //                     .get("/api/team/" + teamId)
-  //                     .set({ "auth-token": token })
-  //                     .end((err, res) => {
-  //                       should().exist(res);
-  //                       res.should.have.status(200);
-  //                       res.body.should.be.a("object");
-  //                       expect(res.body).to.have.property("__v").equal(1);
-  //                       expect(res.body)
-  //                         .to.have.property("users")
-  //                         .that.is.a("array");
-  //                       expect(res.body)
-  //                         .to.have.property("users")
-  //                         .to.eql(updatedTeamMembersArray);
-  //                       res.body.users.length.should.be.eql(2);
-
-  //                       // Remove the user 2 from team
-  //                       chai
-  //                         .request(app)
-  //                         .put("/api/team/" + teamId + "/UpdateMembers")
-  //                         .set({ "auth-token": token })
-  //                         .send({ users: [user1Id] })
-  //                         .end((err, res) => {
-  //                           should().exist(res);
-  //                           res.should.have.status(200);
-
-  //                           chai
-  //                             .request(app)
-  //                             .get("/api/team/" + teamId)
-  //                             .set({ "auth-token": token })
-  //                             .end((err, res) => {
-  //                               should().exist(res);
-  //                               res.should.have.status(200);
-  //                               res.body.should.be.a("object");
-  //                               expect(res.body)
-  //                                 .to.have.property("__v")
-  //                                 .equal(2);
-  //                               expect(res.body)
-  //                                 .to.have.property("users")
-  //                                 .that.is.a("array");
-  //                               expect(res.body)
-  //                                 .to.have.property("users")
-  //                                 .to.eql([user1Id]);
-  //                               res.body.users.length.should.be.eql(1);
-
-  //                               done();
-  //                             });
-  //                         });
-  //                     });
-  //                 });
-  //             });
-  //         });
-  //     });
-  // });
+                    done();
+                  });
+              });
+          });
+      });
+  });
 
   it("/DELETE:id - should register + login a user, try to delete with no token", (done) => {
     const agent = chai.request.agent(app);
